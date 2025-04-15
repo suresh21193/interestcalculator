@@ -1,0 +1,318 @@
+"use client";
+import React, {useEffect, useState, useRef} from "react";
+import ProjectRow from "@/components/ProjectRow/ProjectRow";
+import Modal from "@/components/Modal/Modal";
+import ClipLoader from "react-spinners/ClipLoader";
+import {Input} from "@headlessui/react";
+import toast from "react-hot-toast";
+import {DropDownResponse, FullProjectResponse} from "@/types/types";
+
+interface Project {
+    projectid: number;
+    projectname: string;
+    location: string;
+    projectcost: number;
+    description: string;
+    income: number;
+    totalexpense: number;
+    pendingamount: number;
+    projectbalance: number;
+}
+
+interface Pagination {
+    total: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+/* old response
+ interface ProjectsResponse {
+    projects: Project[];
+    pagination: Pagination;
+}*/
+
+const Projects = () => {
+    // temp checking FullRecipeResponse
+    const [projectsAdd, setProjectsAdd] = useState<Project[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState<number>(1);
+    const [limit] = useState<number>(10);
+    const [search, setSearch] = useState<string>("");
+    const [pagination, setPagination] = useState<Pagination | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const [projects, setProjects] = useState<FullProjectResponse>();
+
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newProject, setNewProject] = useState({
+        projectname: "",
+        location: "",
+        projectcost: "",
+        description: "",
+        income: "",
+    });
+    const [isAdding, setIsAdding] = useState(false);
+    const [addError, setAddError] = useState<string | null>(null);
+    const [shouldRefresh, setShouldRefresh] = useState(false);
+
+    const [isAddProjectFormValid, setIsAddProjectFormValid] = useState(false);
+
+    useEffect(() => {
+        setIsAddProjectFormValid(
+            !!newProject.projectname &&
+            !!newProject.location &&
+            !!newProject.projectcost &&
+            !!Number(newProject.income)
+        );
+    }, [newProject]);
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            const fetchProjects = async () => {
+                try {
+                    setIsLoading(true);
+                    const response = await fetch(
+                        `/api/v1/projectsget?page=${page}&limit=${limit}&search=${search}`
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const data: FullProjectResponse = await response.json();
+                    setProjects(data);
+                    setPagination(data.pagination);
+                    setError(null);
+                } catch (err) {
+                    console.error("Error fetching projects:", err);
+                    setError("Failed to load projects. Please try again later.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            fetchProjects();
+        }, 500);
+
+        return () => clearTimeout(delayDebounce);
+    }, [page, search, shouldRefresh]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
+
+    // Function to Add New Project
+    const handleAddProject = async () => {
+        setIsAdding(true);
+        setAddError(null);
+
+        try {
+            setIsLoading(true);
+            const response = await fetch("/api/v1/projects", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    projectname: newProject.projectname,
+                    location: newProject.location,
+                    projectcost: parseFloat(newProject.projectcost),
+                    description: newProject.description,
+                    income: parseFloat(newProject.income),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setProjectsAdd((prev) => [...prev, data.project]); // Add new Project to the list
+            toast.success("project added successfully");
+            setIsModalOpen(false); // Close modal
+            setNewProject({projectname: "", location: "", projectcost: "", description: "", income: ""}); // Reset form
+        } catch (err) {
+            console.error("Error adding project:", err);
+            setAddError("Failed to add project. Please try again.");
+        } finally {
+            setIsAdding(false);
+            refreshProjects();
+        }
+    };
+
+    const refreshProjects = () => {
+        setShouldRefresh(prevShouldRefresh => !prevShouldRefresh);
+    };
+
+    return (
+        <div>{isLoading ? (<div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50">
+            <ClipLoader size={75} color={"#4A90E2"} loading={isLoading}/>
+        </div>) : (
+            <div className="container mx-auto px-4 py-8">
+                <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search projects..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full px-4 py-2 border rounded shadow-sm mb-4"
+                />
+
+                {projects?.projects.length === 0 ? (
+                    <p className="text-gray-500">No projects found.</p>
+                ) : (
+                    <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+                        <table className=" min-w-full table-auto border-collapse divide-y divide-gray-200 ">
+                            <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Cost</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Pending</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Expense</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Balance</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+
+                            </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                            {projects?.projects.map((project) => (
+                                <ProjectRow key={project.projectid} project={project} onChangeHandler={refreshProjects} refreshProjects={() => {
+                                    console.log("Refresh projects...");
+                                    refreshProjects();
+                                }}/>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {!isLoading && (
+                    <div className="flex justify-center mt-4">
+                        <button
+                            onClick={() => {
+                                setIsModalOpen(true)
+                            }}
+                            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4
+                    rounded-md transition-colors cursor-pointer"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Add Project
+                        </button>
+                    </div>
+                )}
+
+                {pagination && (
+                    <div className="flex justify-between items-center mt-4">
+                        <button
+                            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 cursor-pointer"
+                            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={!pagination.hasPrev}
+                        >
+                            Previous
+                        </button>
+                        <span>Page {pagination.currentPage} of {pagination.totalPages}</span>
+                        <button
+                            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 cursor-pointer"
+                            onClick={() => setPage((prev) => prev + 1)}
+                            disabled={!pagination.hasNext}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+
+                {/* Modal */}
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                    <h2 className="text-xl font-bold mb-4">Add Project</h2>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                            <Input
+                                type="text"
+                                value={newProject.projectname}
+                                onChange={(e) => setNewProject({...newProject, projectname: e.target.value})}
+                                className="mb-2"
+                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                            <Input
+                                type="text"
+                                value={newProject.location}
+                                onChange={(e) => setNewProject({...newProject, location: e.target.value})}
+                                className="mb-2"
+                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Project Cost</label>
+                            <Input
+                                type="text"
+                                value={newProject.projectcost}
+                                onChange={(e) => {
+                                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+                                    setNewProject({...newProject, projectcost: numericValue});
+                                }}
+                                className="mb-2"
+                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <Input
+                                type="text"
+                                value={newProject.description}
+                                onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                                className="mb-2"
+                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid</label>
+                            <Input
+                                type="text"
+                                value={newProject.income}
+                                onChange={(e) => {
+                                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+                                    setNewProject({...newProject, income: numericValue});
+                                }}
+                                className="mb-2"
+                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                            />
+                        </div>
+                        {/* Buttons - Centered */}
+                        <div className="flex justify-center gap-4 mt-4">
+                            <button
+                                className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className={`px-4 py-2 rounded ${
+                                    isAdding || !isAddProjectFormValid ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-500 text-white cursor-pointer"
+                                }`}
+                                onClick={handleAddProject}
+                                disabled={isAdding || !isAddProjectFormValid}
+                            >
+                                {isAdding ? "Adding..." : "Add"}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            </div>)}
+        </div>
+    );
+};
+
+export default Projects;
