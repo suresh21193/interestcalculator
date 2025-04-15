@@ -49,7 +49,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ finishLoading }) => {
             <div className="flex flex-1 items-center justify-center">
                 <div ref={logoRef} className="relative">
                     <Image
-                        src="/images/logo/vani.svg"
+                        src="/images/logo/vistalogo.jpeg"
                         alt="Logo"
                         width={60}
                         height={60}

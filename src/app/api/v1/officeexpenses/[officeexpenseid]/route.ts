@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 
-async function getExpenseId(params: { expenseId?: number }) {
+async function getExpenseId(params: { officeexpenseid?: number }) {
     await Promise.resolve()
-    if (!params || !params.expenseId) {
+    if (!params || !params.officeexpenseid) {
         return null;
     }
-    return params.expenseId;
+    return params.officeexpenseid;
 }
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { expenseId?: number } }
+    { params }: { params: { officeexpenseid?: number } }
 ) {
 
-    const expenseId = await getExpenseId(params);
+    const officeexpenseId = await getExpenseId(params);
 
-    if(!expenseId){
+    if(!officeexpenseId){
         return NextResponse.json({ error: 'Invalid expense Id ' }, { status: 400 });
     }
     // Fetch expense
@@ -28,7 +28,7 @@ export async function GET(
             dateofexpense,
             remarks
         FROM officeexpenses 
-        where officeexpenseid = ${params.expenseId};
+        where officeexpenseid = ${params.officeexpenseid};
            ;
     `).all();
 
@@ -38,18 +38,18 @@ export async function GET(
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { expenseId?: number } }
+    { params }: { params: { officeexpenseid?: number } }
 ) {
     try {
-        const expenseId = await getExpenseId(params);
+        const officeexpenseId = await getExpenseId(params);
 
-        if(!expenseId){
+        if(!officeexpenseId){
             return NextResponse.json({ error: 'Invalid1 expense Id' }, { status: 400 });
         }
 
         // Check if expense exists
         const checkStmt = db.prepare('SELECT officeexpenseid FROM officeexpenses WHERE officeexpenseid = ?');
-        const existingExpenseId = checkStmt.get(expenseId);
+        const existingExpenseId = checkStmt.get(officeexpenseId);
 
         if (!existingExpenseId) {
             return NextResponse.json({ error: 'expense not found' }, { status: 404 });
@@ -71,11 +71,11 @@ export async function PUT(
             'UPDATE officeexpenses SET name = ?, cost=?, dateofexpense = ?, remarks=? WHERE officeexpenseid = ?'
         );
 
-        updateStmt.run(name, cost, dateofexpense, remarks, expenseId);
+        updateStmt.run(name, cost, dateofexpense, remarks, officeexpenseId);
 
         // Get the updated employee
         const getStmt = db.prepare('SELECT * FROM officeexpenses WHERE officeexpenseid = ?');
-        const updatedExpenseId = getStmt.get(expenseId);
+        const updatedExpenseId = getStmt.get(officeexpenseId);
 
         return NextResponse.json({
             message: 'updated successfully',
@@ -92,18 +92,18 @@ export async function PUT(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { expenseId?: number } }
+    { params }: { params: { officeexpenseid?: number } }
 ) {
     try {
-        const expenseId = await getExpenseId(params);
+        const officeexpenseId = await getExpenseId(params);
 
-        if(!expenseId){
+        if(!officeexpenseId){
             return NextResponse.json({ error: 'Invalid1 expense Id' }, { status: 400 });
         }
 
         // Check if expense exists
         const checkStmt = db.prepare('SELECT officeexpenseid FROM officeexpenses WHERE officeexpenseid = ?');
-        const existingExpenseId = checkStmt.get(expenseId);
+        const existingExpenseId = checkStmt.get(officeexpenseId);
 
         if (!existingExpenseId) {
             return NextResponse.json({ error: 'expense not found' }, { status: 404 });
@@ -111,11 +111,11 @@ export async function DELETE(
 
         // Delete the project
         const deleteStmt = db.prepare('DELETE FROM officeexpenses WHERE officeexpenseid = ?');
-        deleteStmt.run(expenseId);
+        deleteStmt.run(officeexpenseId);
 
         return NextResponse.json({
             message: 'expense deleted successfully',
-            deletedId: expenseId
+            deletedId: officeexpenseId
         });
     } catch (error) {
         console.error('Error deleting expense:', error);

@@ -18,7 +18,7 @@ const HomePage = () => {
         <header className="header-bg-color py-4 shadow-md">
           <div className="container mx-auto flex justify-center items-center px-4">
             <div className="flex items-center space-x-2">
-              <img src="/images/logo/vanilogo_new.png" alt="Brand Logo" className="header-icon" />
+              <img src="/images/logo/vistalogo.jpeg" alt="Brand Logo" className="header-icon" />
               <h1 className="text-xl font-bold header-text-color">Vista Homes </h1>
             </div>
           </div>
