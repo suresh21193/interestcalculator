@@ -1,49 +1,83 @@
-import {NextRequest, NextResponse} from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 
 export async function GET(req: NextRequest) {
     try {
-        // Get query parameters for pagination and search
+        // Get query parameters for pagination, search and employeeIds filter
         const searchParams = req.nextUrl.searchParams;
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
         const search = searchParams.get('search') || '';
+        const employeeIds = searchParams.get('employeeIds');
+        const typeIds = searchParams.get('typeIds');
 
-        // Calculate offset
+        // Calculate offset for pagination
         const offset = (page - 1) * limit;
 
-        // Prepare search condition
-        const searchCondition = search ? `WHERE expensename LIKE ?` : '';
-        const searchValue = search ? `%${search}%` : '';
+        // Initialize conditions and parameter values arrays
+        const conditions: string[] = [];
+        const params: string[] = [];
 
-        // Get total count with search condition
-        const countQuery = `SELECT COUNT(*) as total
-                            FROM projectexpenses ${searchCondition}`;
+        // Add condition for search text if provided
+        if (search) {
+            conditions.push(`pe.expensename LIKE ?`);
+            params.push(`%${search}%`);
+        }
+
+        // Add condition for filtering by employee IDs if provided
+        if (employeeIds) {
+            const employeeList = employeeIds.split(',');
+            conditions.push(`pe.empid IN (
+                SELECT DISTINCT pem.empid FROM projectexpenses pem 
+                WHERE pem.empid IN (${employeeList.map(() => '?').join(',')})
+            )`);
+            params.push(...employeeList);
+        }
+        // Add condition for filtering by employee IDs if provided
+        if (typeIds) {
+            const typeList = typeIds.split(',');
+            conditions.push(`pe.type IN (
+                SELECT DISTINCT pt.type FROM projectexpenses pt 
+                WHERE pt.type IN (${typeList.map(() => '?').join(',')})
+            )`);
+            params.push(...typeList);
+        }
+
+        // Combine conditions into a WHERE clause if any exist
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        // Count query for pagination metadata
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM projectexpenses pe
+            ${whereClause}
+        `;
         const countStmt = db.prepare(countQuery);
-
-        // Execute count query with or without search parameter
-        const countResult = search
-            ? countStmt.get(searchValue) as { total: number }
+        const countResult = params.length > 0
+            ? countStmt.get(...params) as { total: number }
             : countStmt.get() as { total: number };
 
         const total = countResult.total;
 
-        // Query ingredients with pagination and search
-        const query = `SELECT
-                           p.projectname,
-                           e.name as employeename,
-                           pe.*
-                       FROM projectexpenses pe
-                                LEFT JOIN projects p ON pe.projectid = p.projectid
-                                LEFT JOIN employees e ON pe.empid = e.empid
-                           ${searchCondition}
-                           ORDER BY projectname asc LIMIT ?
-                           OFFSET ?`;
+        // Main query with joins, filtering, and pagination
+        const query = `
+            SELECT
+                p.projectname,
+                e.name as employeename,
+                pe.*
+            FROM projectexpenses pe
+                     LEFT JOIN projects p ON pe.projectid = p.projectid
+                     LEFT JOIN employees e ON pe.empid = e.empid
+                ${whereClause}
+            ORDER BY projectname ASC
+                LIMIT ?
+            OFFSET ?;
+        `;
         const stmt = db.prepare(query);
 
-        // Execute main query with appropriate parameters
-        const expenses = search
-            ? stmt.all(searchValue, limit, offset)
+        // Execute main query using dynamic params followed by limit and offset
+        const expenses = params.length > 0
+            ? stmt.all(...params, limit, offset)
             : stmt.all(limit, offset);
 
         // Calculate pagination metadata
@@ -51,7 +85,7 @@ export async function GET(req: NextRequest) {
         const hasNext = page < totalPages;
         const hasPrev = page > 1;
 
-        // Return the JSON response with pagination metadata
+        // Return the JSON response with the result and pagination metadata
         return NextResponse.json({
             expenses,
             pagination: {
@@ -67,8 +101,8 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         console.error('Error fetching expenses:', error);
         return NextResponse.json(
-            {error: 'Failed to retrieve expenses'},
-            {status: 500}
+            { error: 'Failed to retrieve expenses' },
+            { status: 500 }
         );
     }
 }

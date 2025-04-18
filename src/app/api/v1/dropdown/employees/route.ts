@@ -5,10 +5,11 @@ export async function GET(req: NextRequest) {
     try {
         // Fetch employees with only id and name
         const employees = db.prepare(`
-            SELECT empid as id, 
-                   name 
-            FROM employees 
-            ORDER BY name ASC
+            SELECT DISTINCT e.empid as id,
+                            e.name as name
+            FROM employees e
+                     INNER JOIN projectexpenses pe ON e.empid = pe.empid 
+            ORDER BY e.name ASC
         `).all();
 
         return NextResponse.json({ employees }, { status: 200 });
