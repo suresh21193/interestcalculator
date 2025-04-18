@@ -254,14 +254,31 @@ const ExpenseRow = ({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                        <Input
+                        <select
+                            value={editedExpense.type}
+                            onChange={(e) => setEditedExpense({...editedExpense, type: e.target.value})}
+                            className="mb-2"
+                            style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                        >
+                            <option value="">Select Expense Type</option>
+                            <option value="Designing">Designing</option>
+                            <option value="Material">Material</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Factory Cost">Factory Cost</option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Food">Food</option>
+                            <option value="Miscellaneous">Miscellaneous</option>
+                        </select>
+                        {/*<Input
                             type="text"
                             value={editedExpense.type}
                             onChange={(e) => setEditedExpense({ ...editedExpense, type: e.target.value })}
                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Type"
-                        />
+                        />*/}
                     </div>
 
                     <div>

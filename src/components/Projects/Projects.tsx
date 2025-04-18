@@ -6,6 +6,8 @@ import ClipLoader from "react-spinners/ClipLoader";
 import {Input} from "@headlessui/react";
 import toast from "react-hot-toast";
 import {DropDownResponse, FullProjectResponse} from "@/types/types";
+import Select from 'react-select';
+import axios from 'axios';
 
 interface Project {
     projectid: number;
@@ -18,6 +20,7 @@ interface Project {
     pendingamount: number;
     projectbalance: number;
 }
+
 
 interface Pagination {
     total: number;
@@ -43,8 +46,16 @@ const Projects = () => {
     const [limit] = useState<number>(10);
     const [search, setSearch] = useState<string>("");
     const [pagination, setPagination] = useState<Pagination | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [projects, setProjects] = useState<FullProjectResponse>();
+    const [employees, setEmployees] = useState<DropDownResponse[]>([]);
+    const [selectedEmployees, setSelectedEmployees] = useState<DropDownResponse[]>([]);
+    const [locations, setLocations] = useState<DropDownResponse[]>([]);
+    const [selectedLocations, setSelectedLocations] = useState<DropDownResponse[]>([]);
+    const [types, setTypes] = useState<DropDownResponse[]>([]);
+    const [selectedTypes, setSelectedTypes] = useState<DropDownResponse[]>([]);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +73,18 @@ const Projects = () => {
     const [isAddProjectFormValid, setIsAddProjectFormValid] = useState(false);
 
     useEffect(() => {
+        fetchEmployees();
+    }, []);
+
+    useEffect(() => {
+        fetchLocations();
+    }, []);
+
+    useEffect(() => {
+        fetchTypes();
+    }, []);
+
+    useEffect(() => {
         setIsAddProjectFormValid(
             !!newProject.projectname &&
             !!newProject.location &&
@@ -75,8 +98,14 @@ const Projects = () => {
             const fetchProjects = async () => {
                 try {
                     setIsLoading(true);
+                    const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
+                    const locationIds = selectedLocations.map(location => location.id).join(',');
+                    const typeIds = selectedTypes.map(type => type.id).join(',');
+                    console.log(selectedEmployees);
+                    console.log("test empids:");
+                    console.log(employeeIds);
                     const response = await fetch(
-                        `/api/v1/projectsget?page=${page}&limit=${limit}&search=${search}`
+                        `/api/v1/projectsget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&locationIds=${locationIds}&typeIds=${typeIds}`
                     );
 
                     if (!response.ok) {
@@ -99,7 +128,7 @@ const Projects = () => {
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh]);
+    }, [page, search, shouldRefresh, selectedEmployees,selectedLocations, selectedTypes]);
 
     useEffect(() => {
         setPage(1);
@@ -146,19 +175,137 @@ const Projects = () => {
         setShouldRefresh(prevShouldRefresh => !prevShouldRefresh);
     };
 
+    const handleEmployeesChange = (selectedOptions: { value: string; label: string }[]) => {
+        if (!selectedOptions) {
+                setSelectedEmployees([]);
+                return;
+            }
+        console.log("selectedOptions:", selectedOptions);
+        const mapped = selectedOptions.map(option => ({
+            id: option.value,
+            name: option.label
+        }));
+        console.log("Selected employees:", mapped);
+        setSelectedEmployees(mapped);
+        setCurrentPage(1);
+    };
+
+    const handleLocationsChange = (selectedOptions: { value: string; label: string }[]) => {
+        if (!selectedOptions) {
+            setSelectedLocations([]);
+            return;
+        }
+        console.log("selectedOptions:", selectedOptions);
+        const mapped = selectedOptions.map(option => ({
+            id: option.value,
+            name: option.label
+        }));
+        console.log("Selected Locations:", mapped);
+        setSelectedLocations(mapped);
+        setCurrentPage(1);
+    };
+
+    const handleTypesChange = (selectedOptions: { value: string; label: string }[]) => {
+        if (!selectedOptions) {
+            setSelectedTypes([]);
+            return;
+        }
+        console.log("selectedOptions:", selectedOptions);
+        const mapped = selectedOptions.map(option => ({
+            id: option.value,
+            name: option.label
+        }));
+        console.log("Selected Locations:", mapped);
+        setSelectedTypes(mapped);
+        setCurrentPage(1);
+    };
+
+    const fetchEmployees = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/v1/dropdown/employees');
+            console.log("Employees API response", response.data.employees);
+            setEmployees(response.data.employees);
+        } catch (error) {
+            console.error('Error fetching employees:', error);
+        } finally {
+        }
+    };
+
+    const fetchLocations = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/v1/dropdown/locations');
+            console.log("Locations API response", response.data.locations);
+            setLocations(response.data.locations);
+        } catch (error) {
+            console.error('Error fetching locations:', error);
+        } finally {
+        }
+    };
+
+    const fetchTypes = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/v1/dropdown/types');
+            console.log("Locations API response", response.data.types);
+            setTypes(response.data.types);
+        } catch (error) {
+            console.error('Error fetching Types:', error);
+        } finally {
+        }
+    };
+
     return (
         <div>{isLoading ? (<div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50">
             <ClipLoader size={75} color={"#4A90E2"} loading={isLoading}/>
         </div>) : (
             <div className="container mx-auto px-4 py-8">
-                <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search projects..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-4 py-2 border rounded shadow-sm mb-4"
-                />
+                <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
+                    <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Search projects..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full px-4 py-2 border rounded shadow-sm mb-4"
+                        />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <Select
+                            isMulti
+                            options={employees.map(employee => ({value: employee.id, label: employee.name}))}
+                            value={selectedEmployees.map(employee => ({
+                                value: employee.id,
+                                label: employee.name
+                            }))}
+                            onChange={handleEmployeesChange} // Use new handler instead
+                            placeholder="Select Employee"
+                        />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <Select
+                            isMulti
+                            options={locations.map(location => ({value: location.id, label: location.name}))}
+                            value={selectedLocations.map(location => ({
+                                value: location.id,
+                                label: location.name
+                            }))}
+                            onChange={handleLocationsChange} // Use new handler instead
+                            placeholder="Select Location"
+                        />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <Select
+                            isMulti
+                            options={types.map(type => ({value: type.id, label: type.name}))}
+                            value={selectedTypes.map(type => ({
+                                value: type.id,
+                                label: type.name
+                            }))}
+                            onChange={handleTypesChange} // Use new handler instead
+                            placeholder="Select Types"
+                        />
+                    </div>
+                </div>
 
                 {projects?.projects.length === 0 ? (
                     <p className="text-gray-500">No projects found.</p>

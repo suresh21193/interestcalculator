@@ -20,8 +20,8 @@ export async function PUT(req: NextRequest, {params}: { params: { empid: number 
                                             WHERE empid = ?`);
         const empExists = checkEmployeeStmt.get(empid);
         if (!empExists) {
-            console.log("Project does not exist:", empid);
-            return NextResponse.json({error: "Project not found"}, {status: 404});
+            console.log("Employee does not exist:", empid);
+            return NextResponse.json({error: "Employee not found"}, {status: 404});
         }
 
         console.log("Employee exists. Proceeding with update...");

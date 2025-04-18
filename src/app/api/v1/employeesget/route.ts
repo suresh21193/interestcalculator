@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1', 10);
         const limit = parseInt(searchParams.get('limit') || '10', 10);
         const search = searchParams.get('search') || '';
+        const roleIds = searchParams.get('roleIds');
 
         const offset = (page - 1) * limit;
         const conditions = [];
@@ -16,6 +17,15 @@ export async function GET(req: NextRequest) {
         if (search) {
             conditions.push(`e.name LIKE ?`);
             values.push(`%${search}%`);
+        }
+
+        if (roleIds) {
+            const roleList = roleIds.split(',');
+            conditions.push(`e.role IN (
+                SELECT DISTINCT er.role FROM employees er 
+                WHERE er.role IN (${roleList.map(() => '?').join(',')})
+            )`);
+            values.push(...roleList);
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -49,6 +59,7 @@ export async function GET(req: NextRequest) {
                                    FROM projectexpenses
                                    GROUP BY empid
                                ) pe ON e.empid = pe.empid
+                               ${whereClause}
                            ORDER BY
                                e.empid  
                        asc LIMIT ?

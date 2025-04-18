@@ -3,7 +3,6 @@ import db from '@/lib/db';
 
 export async function GET(req: NextRequest) {
     try {
-        console.log("suresh6");
         // Fetch employees with only id, name and cash
         const employees = db.prepare(`
             SELECT distinct 

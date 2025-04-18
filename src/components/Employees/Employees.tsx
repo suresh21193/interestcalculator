@@ -6,6 +6,8 @@ import ClipLoader from "react-spinners/ClipLoader";
 import {Input} from "@headlessui/react";
 import toast from "react-hot-toast";
 import {DropDownResponse, FullEmployeeResponse} from "@/types/types";
+import Select from "react-select";
+import axios from 'axios';
 
 interface Employee {
     empid: number;
@@ -39,8 +41,12 @@ const Employees = () => {
     const [limit] = useState<number>(10);
     const [search, setSearch] = useState<string>("");
     const [pagination, setPagination] = useState<Pagination | null>(null);
+    const [currentPage, setCurrentPage] = useState(1)
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [employees, setEmployees] = useState<FullEmployeeResponse>();
+
+    const [roles, setRoles] = useState<DropDownResponse[]>([]);
+    const [selectedRoles, setSelectedRoles] = useState<DropDownResponse[]>([]);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,6 +61,10 @@ const Employees = () => {
     const [isAddEmployeeFormValid, setIsAddEmployeeFormValid] = useState(false);
 
     useEffect(() => {
+        fetchRoles();
+    }, []);
+
+    useEffect(() => {
         setIsAddEmployeeFormValid(
             !!newEmployee.name &&
             !!newEmployee.role
@@ -66,8 +76,9 @@ const Employees = () => {
             const fetchEmployees = async () => {
                 try {
                     setIsLoading(true);
+                    const roleIds = selectedRoles.map(role => role.id).join(',');
                     const response = await fetch(
-                        `/api/v1/employeesget?page=${page}&limit=${limit}&search=${search}`
+                        `/api/v1/employeesget?page=${page}&limit=${limit}&search=${search}&roleIds=${roleIds}`
                     );
 
                     if (!response.ok) {
@@ -90,7 +101,7 @@ const Employees = () => {
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh]);
+    }, [page, search, shouldRefresh, selectedRoles]);
 
     useEffect(() => {
         setPage(1);
@@ -136,19 +147,61 @@ const Employees = () => {
         setShouldRefresh(prevShouldRefresh => !prevShouldRefresh);
     };
 
+    const handleRolesChange = (selectedOptions: { value: string; label: string }[]) => {
+        if (!selectedOptions) {
+            setSelectedRoles([]);
+            return;
+        }
+        console.log("selectedOptions:", selectedOptions);
+        const mapped = selectedOptions.map(option => ({
+            id: option.value,
+            name: option.label
+        }));
+        console.log("Selected Roles:", mapped);
+        setSelectedRoles(mapped);
+        setCurrentPage(1);
+    };
+
+    const fetchRoles = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/v1/dropdown/roles');
+            console.log("Locations API response", response.data.roles);
+            setRoles(response.data.roles);
+        } catch (error) {
+            console.error('Error fetching Roles:', error);
+        } finally {
+        }
+    };
+
     return (
         <div>{isLoading ? (<div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50">
             <ClipLoader size={75} color={"#4A90E2"} loading={isLoading}/>
         </div>) : (
             <div className="container mx-auto px-4 py-8">
-                <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search employees..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-4 py-2 border rounded shadow-sm mb-4"
-                />
+                <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
+                    <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Search employees..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full px-4 py-2 border rounded shadow-sm mb-4"
+                        />
+                    </div>
+                    <div style={{flex: 1}}>
+                        <Select
+                            isMulti
+                            options={roles.map(role => ({value: role.id, label: role.name}))}
+                            value={selectedRoles.map(role => ({
+                                value: role.id,
+                                label: role.name
+                            }))}
+                            onChange={handleRolesChange} // Use new handler instead
+                            placeholder="Select Role"
+                        />
+                    </div>
+                </div>
 
                 {employees?.employees.length === 0 ? (
                     <p className="text-gray-500">No employees found.</p>
