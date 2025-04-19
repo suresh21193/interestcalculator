@@ -5,6 +5,7 @@ import { Input } from "@headlessui/react";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker"; // 👈 CHANGED: Import DatePicker
 import "react-datepicker/dist/react-datepicker.css";
+import { format } from 'date-fns';
 
 interface OfficeExpense {
     officeexpenseid: number;
@@ -80,7 +81,10 @@ const OfficeExpenseRow = ({
             <tr className="hover:bg-gray-50 transition-colors duration-150">
                 <td className="px-6 py-4 text-base font-medium text-gray-900">{expense.name}</td>
                 <td className="px-6 py-4 text-base text-gray-600">₹{expense.cost}</td>
-                <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.dateofexpense}</td>
+                {/*<td className="px-6 py-4 text-base font-medium text-gray-800">{expense.dateofexpense}</td>*/}
+                <td className="px-6 py-4 text-base font-medium text-gray-800">
+                    {format(new Date(expense.dateofexpense), 'dd MMM yyyy')}
+                </td>
                 <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.remarks}</td>
                 <td className="px-6 py-4 text-base text-gray-600">
                     <div className="flex gap-4">
@@ -132,6 +136,9 @@ const OfficeExpenseRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Expense Name"
                         />
+                        {!editedExpense.name.trim() && (
+                            <p className="text-red-500 text-sm mt-1">Name is required</p>
+                        )}
                     </div>
 
 
@@ -147,6 +154,9 @@ const OfficeExpenseRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Amount"
                         />
+                        {!editedExpense.cost && (
+                            <p className="text-red-500 text-sm mt-1">Amount is required</p>
+                        )}
                     </div>
 
                     <div>
@@ -175,9 +185,12 @@ const OfficeExpenseRow = ({
                                     });
                                 }
                             }}
-                            dateFormat="dd-MMM-yyyy"
+                            dateFormat="dd MMM yyyy"
                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
+                        {!editedExpense.dateofexpense.trim() && (
+                            <p className="text-red-500 text-sm mt-1">Date is required</p>
+                        )}
                     </div>
 
                     <div>

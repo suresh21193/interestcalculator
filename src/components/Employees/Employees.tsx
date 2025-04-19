@@ -60,6 +60,13 @@ const Employees = () => {
 
     const [isAddEmployeeFormValid, setIsAddEmployeeFormValid] = useState(false);
 
+    //control toggle expand
+    const [expandedEmployeeId, setExpandedEmployeeId] = useState<number | null>(null);
+
+    const toggleEmployeeExpand = (empid: number) => {
+        setExpandedEmployeeId(prev => (prev === empid ? null : empid));
+    };
+
     useEffect(() => {
         fetchRoles();
     }, []);
@@ -219,7 +226,10 @@ const Employees = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                             {employees?.employees.map((employee) => (
-                                <EmployeeRow key={employee.empid} employeeWithPettyCash={employee} onChangeHandler={refreshEmployees} refreshEmployees={() => {
+                                <EmployeeRow key={employee.empid} employeeWithPettyCash={employee}
+                                             isExpanded={expandedEmployeeId === employee.empid}
+                                             toggleExpand={() => toggleEmployeeExpand(employee.empid)}
+                                             onChangeHandler={refreshEmployees} refreshEmployees={() => {
                                     console.log("Refresh employees...");
                                     refreshEmployees();
                                 }}/>

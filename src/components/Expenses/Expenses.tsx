@@ -85,6 +85,10 @@ const Expenses = () => {
     const [employees, setEmployees] = useState<Employee[]>([]); // 👈 CHANGED: State for employees
     const [projects, setProjects] = useState<Project[]>([]); // 👈 CHANGED: State for projects
 
+    //date filter
+    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+    const [startDate, endDate] = dateRange;
+
     const API_BASE_URL = "http://localhost:3000";
 
     useEffect(() => {
@@ -147,10 +151,43 @@ const Expenses = () => {
             const fetchExpenses = async () => {
                 try {
                     setIsLoading(true);
+
+                    // 🔹 Convert to backend-compatible format: "19 Apr 2025"
+                    /*const formatDate = (date: Date | null) => {
+                        return date
+                            ? date.toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                            }).replace(",", "")
+                            : "";
+                    };*/
+
+                    /*const formatDate = (date: Date | null) => {
+                        return date
+                            ? date.toISOString().split("T")[0] // outputs "2025-04-01"
+                            : "";
+                    };*/
+
+                    const formatDate = (date: Date | null) => {
+                        if (!date) return "";
+
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                        const day = String(date.getDate()).padStart(2, "0");
+
+                        return `${year}-${month}-${day}`; // e.g., "2025-04-16"
+                    };
+
+                    const formattedStartDate = formatDate(startDate);
+                    const formattedEndDate = formatDate(endDate);
+
                     const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
                     const typeIds = selectedTypes.map(type => type.id).join(',');
                     const response = await fetch(
-                        `/api/v1/expensesget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&typeIds=${typeIds}`
+                        `/api/v1/expensesget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&typeIds=${typeIds}`+
+                        (formattedStartDate ? `&startDate=${formattedStartDate}` : "") +
+                        (formattedEndDate ? `&endDate=${formattedEndDate}` : "")
                     );
 
                     if (!response.ok) {
@@ -173,7 +210,7 @@ const Expenses = () => {
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh, selectedEmployees, selectedTypes]);
+    }, [page, search, shouldRefresh, selectedEmployees, selectedTypes, dateRange]);
 
     useEffect(() => {
         setPage(1);
@@ -208,7 +245,19 @@ const Expenses = () => {
             setExpenses((prev) => [...prev, data.expense]); // Add new expense to the list
             toast.success("expense added successfully");
             setIsModalOpen(false); // Close modal
-            setNewExpense({projectid: "", empid: "", expensename: "", amount: "", type: "", dateofexpense: "", remarks: ""}); // Reset form
+            setNewExpense({
+                projectid: "",
+                empid: "",
+                expensename: "",
+                amount: "",
+                type: "",
+                dateofexpense: new Date().toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                }).replace(",", ""),
+                remarks: ""
+            }); // Reset form
         } catch (err) {
             console.error("Error adding expense:", err);
             setAddError("Failed to add expense. Please try again.");
@@ -314,6 +363,21 @@ const Expenses = () => {
                             }))}
                             onChange={handleTypesChange} // Use new handler instead
                             placeholder="Select Types"
+                        />
+                    </div>
+                    <div className="w-full sm:flex-1">
+                        <DatePicker
+                            selectsRange
+                            startDate={startDate}
+                            endDate={endDate}
+                            onChange={(update: [Date | null, Date | null]) => {
+                                setDateRange(update);
+                                setPage(1); // reset page on filter change
+                            }}
+                            isClearable
+                            placeholderText="Filter by date range"
+                            dateFormat="dd MMM yyyy"   // ✅ SHOW date as "19 Apr 2025"
+                            className="w-full px-4 py-2 border rounded"
                         />
                     </div>
                 </div>
@@ -485,7 +549,7 @@ const Expenses = () => {
                                         });
                                     }
                                 }}
-                                dateFormat="dd-MMM-yyyy"
+                                dateFormat="dd MMM yyyy"
                                 className="mb-2 w-full px-4 py-2 border rounded"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />

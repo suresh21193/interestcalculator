@@ -55,7 +55,12 @@ export async function PUT(req: NextRequest, {params}: { params: { empid: number 
             console.log("Inserting new pettycash...");
             body.pettycashes.forEach((pettycash: { pettycash:number; dateofpettycash: string }) => {
                 console.log(`Inserting expense: ${pettycash.pettycash}, Amount: ${pettycash.dateofpettycash}`);
-                insertEmployeePettycashStmt.run(empid, pettycash.pettycash, pettycash.dateofpettycash);
+                //date
+                const date = new Date(pettycash.dateofpettycash);
+                const isoDate = date.getFullYear() + '-' +
+                    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(date.getDate()).padStart(2, '0');
+                insertEmployeePettycashStmt.run(empid, pettycash.pettycash, isoDate);
             });
         });
 

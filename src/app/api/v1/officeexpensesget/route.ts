@@ -1,57 +1,63 @@
-import {NextRequest, NextResponse} from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 
 export async function GET(req: NextRequest) {
     try {
-        // Get query parameters for pagination and search
         const searchParams = req.nextUrl.searchParams;
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
         const search = searchParams.get('search') || '';
 
-        // Calculate offset
+        // ✅ NEW: Get date range filters from query params
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
+
         const offset = (page - 1) * limit;
 
-        // Prepare search condition
-        const searchCondition = search ? `WHERE name LIKE ?` : '';
-        const searchValue = search ? `%${search}%` : '';
+        // ✅ NEW: Build dynamic WHERE conditions
+        const conditions: string[] = [];
+        const values: any[] = [];
 
-        // Get total count with search condition
-        const countQuery = `SELECT COUNT(*) as total
-                            FROM officeexpenses ${searchCondition}`;
+        if (search) {
+            conditions.push(`name LIKE ?`);
+            values.push(`%${search}%`);
+        }
+
+        if (startDate && endDate) {
+            conditions.push(`DATE(dateofexpense) BETWEEN DATE(?) AND DATE(?)`);
+            values.push(startDate, endDate);
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        // 🛠 MODIFIED: Use dynamic whereClause in count query
+        const countQuery = `SELECT COUNT(*) as total FROM officeexpenses ${whereClause}`;
         const countStmt = db.prepare(countQuery);
-
-        // Execute count query with or without search parameter
-        const countResult = search
-            ? countStmt.get(searchValue) as { total: number }
-            : countStmt.get() as { total: number };
+        const countResult = countStmt.get(...values) as { total: number };
 
         const total = countResult.total;
 
-        // Query ingredients with pagination and search
+        // 🛠 MODIFIED: Use same whereClause and values in data query
         const query = `SELECT
                            officeexpenseid,
                            name,
                            cost,
                            dateofexpense,
                            remarks
-                       FROM officeexpenses 
-                           ${searchCondition}
-                           ORDER BY officeexpenseid asc LIMIT ?
-                           OFFSET ?`;
+                       FROM officeexpenses
+                       ${whereClause}
+                       ORDER BY officeexpenseid ASC
+                       LIMIT ? OFFSET ?`;
+
         const stmt = db.prepare(query);
+        console.log(query);
+        console.log(values);
+        const expenses = stmt.all(...values, limit, offset);
 
-        // Execute main query with appropriate parameters
-        const expenses = search
-            ? stmt.all(searchValue, limit, offset)
-            : stmt.all(limit, offset);
-
-        // Calculate pagination metadata
         const totalPages = Math.ceil(total / limit);
         const hasNext = page < totalPages;
         const hasPrev = page > 1;
 
-        // Return the JSON response with pagination metadata
         return NextResponse.json({
             expenses,
             pagination: {
@@ -67,8 +73,8 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         console.error('Error fetching expenses:', error);
         return NextResponse.json(
-            {error: 'Failed to retrieve expenses'},
-            {status: 500}
+            { error: 'Failed to retrieve expenses' },
+            { status: 500 }
         );
     }
 }

@@ -70,8 +70,13 @@ export async function PUT(
         const updateStmt = db.prepare(
             'UPDATE projectexpenses SET projectid=?, empid=?, expensename = ?, amount=?, type = ?, dateofexpense = ?, remarks=? WHERE expenseid = ?'
         );
-
-        updateStmt.run(projectid, empid, expensename, amount, type, dateofexpense, remarks, expenseId);
+        //dateformat change
+        //const isoDate = new Date(dateofexpense).toISOString().split('T')[0];
+        const date = new Date(dateofexpense);
+        const isoDate = date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0');
+        updateStmt.run(projectid, empid, expensename, amount, type, isoDate, remarks, expenseId);
 
         // Get the updated employee
         const getStmt = db.prepare('SELECT * FROM projectexpenses WHERE expenseid = ?');

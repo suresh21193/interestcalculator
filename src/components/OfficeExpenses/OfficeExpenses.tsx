@@ -59,6 +59,10 @@ const OfficeExpenses = () => {
 
     const [isAddExpenseFormValid, setIsAddExpenseFormValid] = useState(false);
 
+    //date filter
+    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+    const [startDate, endDate] = dateRange;
+
     useEffect(() => {
         setIsAddExpenseFormValid(
             !!newExpense.name &&
@@ -72,8 +76,25 @@ const OfficeExpenses = () => {
             const fetchExpenses = async () => {
                 try {
                     setIsLoading(true);
+
+                    //formatting the date to "2025-04-16" in filters
+                    const formatDate = (date: Date | null) => {
+                        if (!date) return "";
+
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, "0");
+                        const day = String(date.getDate()).padStart(2, "0");
+
+                        return `${year}-${month}-${day}`; // e.g., "2025-04-16"
+                    };
+
+                    const formattedStartDate = formatDate(startDate);
+                    const formattedEndDate = formatDate(endDate);
+
                     const response = await fetch(
-                        `/api/v1/officeexpensesget?page=${page}&limit=${limit}&search=${search}`
+                        `/api/v1/officeexpensesget?page=${page}&limit=${limit}&search=${search}` +
+                        (formattedStartDate ? `&startDate=${formattedStartDate}` : "") +
+                        (formattedEndDate ? `&endDate=${formattedEndDate}` : "")
                     );
 
                     if (!response.ok) {
@@ -96,7 +117,7 @@ const OfficeExpenses = () => {
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh]);
+    }, [page, search, shouldRefresh, dateRange]);
 
     useEffect(() => {
         setPage(1);
@@ -128,7 +149,16 @@ const OfficeExpenses = () => {
             setExpenses((prev) => [...prev, data.expense]); // Add new expense to the list
             toast.success("office expense added successfully");
             setIsModalOpen(false); // Close modal
-            setNewExpense({ name: "", cost: "", dateofexpense: "", remarks: ""}); // Reset form
+            setNewExpense({
+                name: "",
+                cost: "",
+                dateofexpense: new Date().toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                }).replace(",", ""),
+                remarks: ""
+            }); // Reset form
         } catch (err) {
             console.error("Error adding expense:", err);
             setAddError("Failed to add expense. Please try again.");
@@ -147,14 +177,32 @@ const OfficeExpenses = () => {
             <ClipLoader size={75} color={"#4A90E2"} loading={isLoading}/>
         </div>) : (
             <div className="container mx-auto px-4 py-8">
-                <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search expenses..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-4 py-2 border rounded shadow-sm mb-4"
-                />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                    <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Search expenses..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full sm:flex-1 px-4 py-2 border rounded shadow-sm"
+                    />
+
+                    <div className="w-full sm:flex-1">
+                        <DatePicker
+                            selectsRange
+                            startDate={startDate}
+                            endDate={endDate}
+                            onChange={(update: [Date | null, Date | null]) => {
+                                setDateRange(update);
+                                setPage(1); // reset page on filter change
+                            }}
+                            isClearable
+                            placeholderText="Filter by date range"
+                            dateFormat="dd MMM yyyy"   // ✅ SHOW date as "19 Apr 2025"
+                            className="w-full px-4 py-2 border rounded"
+                        />
+                    </div>
+                </div>
 
                 {expenses.length === 0 ? (
                     <p className="text-gray-500">No expenses found.</p>
@@ -234,6 +282,9 @@ const OfficeExpenses = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newExpense.name.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Name is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
@@ -247,6 +298,9 @@ const OfficeExpenses = () => {
                                 className="mb-2 w-full px-4 py-2 border rounded"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newExpense.cost.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Amount is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Date of Expense</label>
@@ -264,10 +318,13 @@ const OfficeExpenses = () => {
                                         });
                                     }
                                 }}
-                                dateFormat="dd-MMM-yyyy"
+                                dateFormat="dd MMM yyyy"
                                 className="mb-2 w-full px-4 py-2 border rounded"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newExpense.dateofexpense.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Date is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>

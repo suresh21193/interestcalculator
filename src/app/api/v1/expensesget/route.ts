@@ -11,6 +11,10 @@ export async function GET(req: NextRequest) {
         const employeeIds = searchParams.get('employeeIds');
         const typeIds = searchParams.get('typeIds');
 
+        // ✅ NEW: Get date range filters from query params
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
+
         // Calculate offset for pagination
         const offset = (page - 1) * limit;
 
@@ -41,6 +45,13 @@ export async function GET(req: NextRequest) {
                 WHERE pt.type IN (${typeList.map(() => '?').join(',')})
             )`);
             params.push(...typeList);
+        }
+
+        //datefilter condition
+        if (startDate && endDate) {
+            conditions.push(`DATE(pe.dateofexpense) BETWEEN DATE(?) AND DATE(?)`);
+            //conditions.push(`pe.dateofexpense BETWEEN ? AND ?`);
+            params.push(startDate, endDate);
         }
 
         // Combine conditions into a WHERE clause if any exist

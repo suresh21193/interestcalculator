@@ -5,6 +5,7 @@ import { Input } from "@headlessui/react";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker"; // 👈 CHANGED: Import DatePicker
 import "react-datepicker/dist/react-datepicker.css";
+import {format} from "date-fns";
 
 interface Expense {
     expenseid: number;
@@ -138,7 +139,10 @@ const ExpenseRow = ({
                 <td className="px-6 py-4 text-base text-gray-600">{expense.employeename || "Others"}</td>
                 <td className="px-6 py-4 text-base text-gray-600">₹{expense.amount}</td>
                 <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.type}</td>
-                <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.dateofexpense}</td>
+                {/*<td className="px-6 py-4 text-base font-medium text-gray-800">{expense.dateofexpense}</td>*/}
+                <td className="px-6 py-4 text-base font-medium text-gray-800">
+                    {format(new Date(expense.dateofexpense), 'dd MMM yyyy')}
+                </td>
                 <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.remarks}</td>
                 <td className="px-6 py-4 text-base text-gray-600">
                     <div className="flex gap-4">
@@ -307,7 +311,7 @@ const ExpenseRow = ({
                                     });
                                 }
                             }}
-                            dateFormat="dd-MMM-yyyy"
+                            dateFormat="dd MMM yyyy"
                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>

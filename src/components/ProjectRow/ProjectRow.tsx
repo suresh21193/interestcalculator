@@ -46,10 +46,14 @@ const ProjectRow = ({
                         project,
                         onChangeHandler,
                         refreshProjects,
+                        isExpanded,
+                        toggleExpand,
                     }: {
     project: ProjectWithExpensesResponse;
     refreshProjects: () => void;
     onChangeHandler: ()=> void;
+    isExpanded: boolean;
+    toggleExpand: () => void;
 }) => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -58,7 +62,8 @@ const ProjectRow = ({
 
     //project with expense
     const [expenseList, setExpenseList] = useState(project?.expenses);
-    const [isExpanded, setIsExpanded] = useState(false);
+    // commented old
+    /*const [isExpanded, setIsExpanded] = useState(false);*/
     const [employees, setEmployees] = useState<Employee[]>([]); // 👈 CHANGED: State for employees
 
     // test edit expense
@@ -90,9 +95,10 @@ const ProjectRow = ({
         fetchEmployees();
     }, []);
 
-    const toggleExpand = () => {
+    // commented old
+    /*const toggleExpand = () => {
         setIsExpanded(!isExpanded);
-    };
+    };*/
 
     const handleUpdate = async () => {
         try {
@@ -384,7 +390,7 @@ const ProjectRow = ({
                                                                 updatedExpenses[index].dateofexpense = formattedDate;
                                                                 setExpenseList(updatedExpenses);
                                                             }}
-                                                            dateFormat="dd-MMM-yyyy"
+                                                            dateFormat="dd MMM yyyy"
                                                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 
                                                         />

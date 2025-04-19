@@ -5,6 +5,6 @@ import path from 'path';
 const dbPath = process.env.DB_PATH || path.join(process.cwd(), 'src', 'data', 'database.db');
 console.log(dbPath);
 const db = new Database(dbPath);
-
+db.pragma('journal_mode = WAL');
 
 export default db;

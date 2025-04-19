@@ -20,10 +20,14 @@ const EmployeeRow = ({
                          employeeWithPettyCash,
                          onChangeHandler,
                            refreshEmployees,
+                         isExpanded,
+                         toggleExpand,
                        }: {
     employeeWithPettyCash: EmployeeWithPettycashResponse;
     refreshEmployees: () => void;
     onChangeHandler: ()=> void;
+    isExpanded: boolean;
+    toggleExpand: () => void;
 }) => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -33,7 +37,8 @@ const EmployeeRow = ({
 
     //project with pettycash
     const [pettycashList, setPettycashList] = useState(employeeWithPettyCash?.pettycash);
-    const [isExpanded, setIsExpanded] = useState(false);
+    // commented old
+    //const [isExpanded, setIsExpanded] = useState(false);
 
     const API_BASE_URL = "http://localhost:3000";
 
@@ -41,9 +46,10 @@ const EmployeeRow = ({
         editedEmployee.name.trim()  !== "" &&
         editedEmployee.role.trim()  !== "" ;
 
-    const toggleExpand = () => {
+    // commented old
+    /*const toggleExpand = () => {
         setIsExpanded(!isExpanded);
-    };
+    };*/
 
     const handleUpdate = async () => {
         try {
@@ -100,7 +106,7 @@ const EmployeeRow = ({
             await axios.put(`${API_BASE_URL}/api/v1/employeewithpettycash/${employeeWithPettyCash?.empid}`, payload);
             console.log("Employee saved successfully!");
             toast.success("Employee petty cash Updated successfully!");
-            //onChangeHandler();
+            onChangeHandler();
         } catch (error) {
             console.error("Error saving petty cash", error);
         }
@@ -235,7 +241,7 @@ const EmployeeRow = ({
                                                                 updatedPettycash[index].dateofpettycash = formattedDate;
                                                                 setPettycashList(updatedPettycash);
                                                             }}
-                                                            dateFormat="dd-MMM-yyyy"
+                                                            dateFormat="dd MMM yyyy"
                                                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 
                                                         />

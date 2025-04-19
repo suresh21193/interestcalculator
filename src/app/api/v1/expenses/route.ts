@@ -34,7 +34,13 @@ export async function POST(req: NextRequest) {
         const stmt = db.prepare(`
             INSERT INTO projectexpenses (projectid, empid, expensename, amount, type, dateofexpense, remarks) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-        stmt.run(body.projectid, body.empid, body.expensename, body.amount, body.type, body.dateofexpense, body.remarks);
+        //dateformat change
+        // const isoDate = new Date(body.dateofexpense).toISOString().split('T')[0];
+        const date = new Date(body.dateofexpense);
+        const isoDate = date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0');
+        stmt.run(body.projectid, body.empid, body.expensename, body.amount, body.type, isoDate, body.remarks);
 
         return NextResponse.json(
             {

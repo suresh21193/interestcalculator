@@ -72,6 +72,13 @@ const Projects = () => {
 
     const [isAddProjectFormValid, setIsAddProjectFormValid] = useState(false);
 
+    //control toggle expand
+    const [expandedProjectId, setExpandedProjectId] = useState<number | null>(null);
+
+    const toggleProjectExpand = (projectid: number) => {
+        setExpandedProjectId(prev => (prev === projectid ? null : projectid));
+    };
+
     useEffect(() => {
         fetchEmployees();
     }, []);
@@ -328,7 +335,10 @@ const Projects = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                             {projects?.projects.map((project) => (
-                                <ProjectRow key={project.projectid} project={project} onChangeHandler={refreshProjects} refreshProjects={() => {
+                                <ProjectRow key={project.projectid} project={project}
+                                            isExpanded={expandedProjectId === project.projectid}
+                                            toggleExpand={() => toggleProjectExpand(project.projectid)}
+                                            onChangeHandler={refreshProjects} refreshProjects={() => {
                                     console.log("Refresh projects...");
                                     refreshProjects();
                                 }}/>

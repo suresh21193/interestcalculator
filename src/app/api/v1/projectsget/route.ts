@@ -82,8 +82,12 @@ export async function GET(req: NextRequest) {
         const stmt = db.prepare(query);
         const projects = stmt.all(...values, limit, offset);
 
+        //applying filters to child
+        const employeeList = employeeIds ? employeeIds.split(',') : [];
+        const typeList = typeIds ? typeIds.split(',') : [];
+
         const projectsWithExpenses = projects.map((project: { projectid: number; projectname: string; location: string; description: string; projectcost: number; income: number; totalexpense: number; pendingamount: number; projectbalance: number }) => {
-            const expenses = db.prepare(`
+            let expenseQuery = `
                 SELECT expenseid,
                        expensename,
                        empid,
@@ -93,7 +97,31 @@ export async function GET(req: NextRequest) {
                        remarks
                 FROM projectexpenses
                 WHERE projectid = ?
-            `).all(project.projectid);
+            `;
+            const expenseValues: (string | number)[] = [project.projectid];
+
+            if (employeeList.length > 0) {
+                expenseQuery += ` AND empid IN (${employeeList.map(() => '?').join(',')})`;
+                expenseValues.push(...employeeList);
+            }
+
+            if (typeList.length > 0) {
+                expenseQuery += ` AND type IN (${typeList.map(() => '?').join(',')})`;
+                expenseValues.push(...typeList);
+            }
+            const expenses = db.prepare(expenseQuery).all(...expenseValues);
+            // commented
+            /*const expenses = db.prepare(`
+                SELECT expenseid,
+                       expensename,
+                       empid,
+                       amount,
+                       type,
+                       dateofexpense,
+                       remarks
+                FROM projectexpenses
+                WHERE projectid = ?
+            `).all(project.projectid);*/
             return {
                 ...project,
                 expenses

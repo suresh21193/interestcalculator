@@ -34,7 +34,14 @@ export async function POST(req: NextRequest) {
         const stmt = db.prepare(`
             INSERT INTO officeexpenses (name, cost, dateofexpense, remarks) VALUES ( ?, ?, ?, ?)
     `);
-        stmt.run(body.name, body.cost, body.dateofexpense, body.remarks);
+        //date
+        const date = new Date(body.dateofexpense);
+        const isoDate = date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0');
+        console.log(body.dateofexpense);
+        console.log(isoDate);
+        stmt.run(body.name, body.cost, isoDate, body.remarks);
 
         return NextResponse.json(
             {
