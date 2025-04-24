@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import DatePicker from "react-datepicker"; // 👈 CHANGED: Import DatePicker
 import "react-datepicker/dist/react-datepicker.css";
 import {format} from "date-fns";
+import { isValid, parse } from 'date-fns';
 
 interface Expense {
     expenseid: number;
@@ -141,7 +142,9 @@ const ExpenseRow = ({
                 <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.type}</td>
                 {/*<td className="px-6 py-4 text-base font-medium text-gray-800">{expense.dateofexpense}</td>*/}
                 <td className="px-6 py-4 text-base font-medium text-gray-800">
-                    {format(new Date(expense.dateofexpense), 'dd MMM yyyy')}
+                    {isValid(new Date(expense.dateofexpense))
+                        ? format(new Date(expense.dateofexpense), 'dd MMM yyyy')
+                        : 'Invalid Date'}
                 </td>
                 <td className="px-6 py-4 text-base font-medium text-gray-800">{expense.remarks}</td>
                 <td className="px-6 py-4 text-base text-gray-600">
@@ -181,172 +184,177 @@ const ExpenseRow = ({
 
             {/* Edit Modal */}
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Expense</h2>
+                <div className="max-h-[80vh] overflow-y-auto p-4">
+                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Expense</h2>
 
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Expense Name</label>
-                        <Input
-                            type="text"
-                            value={editedExpense.expensename}
-                            onChange={(e) => setEditedExpense({ ...editedExpense, expensename: e.target.value })}
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-                            placeholder="Expense Name"
-                        />
-                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Expense Name</label>
+                            <Input
+                                type="text"
+                                value={editedExpense.expensename}
+                                onChange={(e) => setEditedExpense({ ...editedExpense, expensename: e.target.value })}
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                                placeholder="Expense Name"
+                            />
+                            {!editedExpense.expensename.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Name is required</p>
+                            )}
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-                        <select
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            value={editedExpense.projectid === null ? "others" : editedExpense.projectid ?? ""} // 🟢 FIXED: Show 'Others' correctly
-                            onChange={(e) => {
-                                const selectedId = e.target.value === "others" ? null : parseInt(e.target.value);
-                                setEditedExpense({
-                                    ...editedExpense,
-                                    projectid: selectedId,
-                                });
-                            }}
-                        >
-                            <option value="">Select Project</option>
-                            {projects.map((project) => (
-                                <option key={project.projectid} value={project.projectid}>
-                                    {project.projectname}
-                                </option>
-                            ))}
-                            <option value="others">Others</option> {/* 🟢 FIXED: Correctly represent "Others" */}
-                        </select>
-
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
-                        <select
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            value={editedExpense.empid === null ? "others" : editedExpense.empid ?? ""} // 🟢 FIXED: Show 'Others' correctly
-                            onChange={(e) => {
-                                const selectedId = e.target.value === "others" ? null : parseInt(e.target.value);
-                                setEditedExpense({
-                                    ...editedExpense,
-                                    empid: selectedId,
-                                });
-                            }}
-                        >
-                            <option value="">Select Employee</option>
-                            {employees.map((emp) => (
-                                <option key={emp.empid} value={emp.empid}>
-                                    {emp.employeename}
-                                </option>
-                            ))}
-                            <option value="others">Others</option> {/* 🟢 FIXED: Correctly represent "Others" */}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
-                        <Input
-                            type="text"
-                            value={editedExpense.amount || ""}
-                            onChange={(e) =>
-                                setEditedExpense({ ...editedExpense, amount: e.target.value ? Number(e.target.value) : 0 })
-                            }
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-                            placeholder="Amount"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                        <select
-                            value={editedExpense.type}
-                            onChange={(e) => setEditedExpense({...editedExpense, type: e.target.value})}
-                            className="mb-2"
-                            style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                        >
-                            <option value="">Select Expense Type</option>
-                            <option value="Designing">Designing</option>
-                            <option value="Material">Material</option>
-                            <option value="Transport">Transport</option>
-                            <option value="Factory Cost">Factory Cost</option>
-                            <option value="Hardware">Hardware</option>
-                            <option value="Salary">Salary</option>
-                            <option value="Travel">Travel</option>
-                            <option value="Food">Food</option>
-                            <option value="Miscellaneous">Miscellaneous</option>
-                        </select>
-                        {/*<Input
-                            type="text"
-                            value={editedExpense.type}
-                            onChange={(e) => setEditedExpense({ ...editedExpense, type: e.target.value })}
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-                            placeholder="Type"
-                        />*/}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Date of Expense</label>
-                        <DatePicker
-                            selected={editedExpense.dateofexpense ? new Date(editedExpense.dateofexpense) : new Date()} // Handle null date
-                            onChange={(date: Date | null) => {
-                                if (date) {
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                            <select
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value={editedExpense.projectid === null ? "others" : editedExpense.projectid ?? ""} // 🟢 FIXED: Show 'Others' correctly
+                                onChange={(e) => {
+                                    const selectedId = e.target.value === "others" ? null : parseInt(e.target.value);
                                     setEditedExpense({
                                         ...editedExpense,
-                                        dateofexpense: date.toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                        }).replace(",", ""), // Ensures format like 16-Mar-2025
+                                        projectid: selectedId,
                                     });
-                                } else {
-                                    // If null, set the current date (or another fallback if preferred)
+                                }}
+                            >
+                                {/*<option value="">Select Project</option>*/}
+                                {projects.map((project) => (
+                                    <option key={project.projectid} value={project.projectid}>
+                                        {project.projectname}
+                                    </option>
+                                ))}
+                                <option value="others">Others</option> {/* 🟢 FIXED: Correctly represent "Others" */}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+                            <select
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value={editedExpense.empid === null ? "others" : editedExpense.empid ?? ""} // 🟢 FIXED: Show 'Others' correctly
+                                onChange={(e) => {
+                                    const selectedId = e.target.value === "others" ? null : parseInt(e.target.value);
                                     setEditedExpense({
                                         ...editedExpense,
-                                        dateofexpense: new Date().toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                        }).replace(",", ""),
+                                        empid: selectedId,
                                     });
+                                }}
+                            >
+                                {/*<option value="">Select Employee</option>*/}
+                                {employees.map((emp) => (
+                                    <option key={emp.empid} value={emp.empid}>
+                                        {emp.employeename}
+                                    </option>
+                                ))}
+                                <option value="others">Others</option> {/* 🟢 FIXED: Correctly represent "Others" */}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                            <Input
+                                type="text"
+                                value={editedExpense.amount || ""}
+                                onChange={(e) =>
+                                    setEditedExpense({ ...editedExpense, amount: e.target.value ? Number(e.target.value) : 0 })
                                 }
-                            }}
-                            dateFormat="dd MMM yyyy"
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                                placeholder="Amount"
+                            />
+                            {!editedExpense.amount && (
+                                <p className="text-red-500 text-sm mt-1">Name is required</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <select
+                                value={editedExpense.type}
+                                onChange={(e) => setEditedExpense({...editedExpense, type: e.target.value})}
+                                className="mb-2"
+                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                            >
+                                <option value="">Select Expense Type</option>
+                                <option value="Designing">Designing</option>
+                                <option value="Material">Material</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Factory Cost">Factory Cost</option>
+                                <option value="Hardware">Hardware</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Food">Food</option>
+                                <option value="Miscellaneous">Miscellaneous</option>
+                            </select>
+                            {!editedExpense.type.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Name is required</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Expense</label>
+                            <DatePicker
+                                selected={editedExpense.dateofexpense ? new Date(editedExpense.dateofexpense) : new Date()} // Handle null date
+                                onChange={(date: Date | null) => {
+                                    if (date) {
+                                        setEditedExpense({
+                                            ...editedExpense,
+                                            dateofexpense: date.toLocaleDateString("en-GB", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                            }).replace(",", ""), // Ensures format like 16-Mar-2025
+                                        });
+                                    } else {
+                                        // If null, set the current date (or another fallback if preferred)
+                                        setEditedExpense({
+                                            ...editedExpense,
+                                            dateofexpense: new Date().toLocaleDateString("en-GB", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                            }).replace(",", ""),
+                                        });
+                                    }
+                                }}
+                                dateFormat="dd MMM yyyy"
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            {!editedExpense.dateofexpense.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Date is required</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                            <Input
+                                type="text"
+                                value={editedExpense.remarks}
+                                onChange={(e) => setEditedExpense({ ...editedExpense, remarks: e.target.value })}
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                                placeholder="Remarks"
+                            />
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                        <Input
-                            type="text"
-                            value={editedExpense.remarks}
-                            onChange={(e) => setEditedExpense({ ...editedExpense, remarks: e.target.value })}
-                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-                            placeholder="Remarks"
-                        />
+                    <div className="flex justify-end gap-4 mt-6">
+                        <button
+                            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-150 font-medium cursor-pointer"
+                            onClick={() => setIsEditModalOpen(false)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className={`cursor-pointer px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-colors duration-150 font-medium ${
+                                isFormValid
+                                    ? "bg-green-500 hover:bg-green-600 text-white"
+                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
+                            onClick={handleUpdate}
+                            disabled={!isFormValid || isLoading}
+                        >
+                            {isLoading ? <ClipLoader size={16} color="white" /> : "Save Changes"}
+                        </button>
                     </div>
-                </div>
-
-                <div className="flex justify-end gap-4 mt-6">
-                    <button
-                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-150 font-medium cursor-pointer"
-                        onClick={() => setIsEditModalOpen(false)}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        className={`cursor-pointer px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-colors duration-150 font-medium ${
-                            isFormValid
-                                ? "bg-green-500 hover:bg-green-600 text-white"
-                                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
-                        onClick={handleUpdate}
-                        disabled={!isFormValid || isLoading}
-                    >
-                        {isLoading ? <ClipLoader size={16} color="white" /> : "Save Changes"}
-                    </button>
                 </div>
             </Modal>
 

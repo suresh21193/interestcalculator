@@ -155,8 +155,8 @@ const ProjectRow = ({
         };
         try {
             await axios.put(`${API_BASE_URL}/api/v1/projectwithexpenses/${project?.projectid}`, payload);
-            console.log("Recipe saved successfully!");
-            toast.success("Recipe created successfully!");
+            console.log("Project saved successfully!");
+            toast.success("Project updated successfully!");
             //onChangeHandler();
         } catch (error) {
             console.error("Error saving recipe", error);
@@ -188,23 +188,40 @@ const ProjectRow = ({
     };*/
 
 
-    const isRowValid = (expense: any) => {
+   /* const isRowValid = (expense: any) => {
         return (
             expense.expensename?.trim() &&
-            /*(expense.empid !== null && expense.empid !== undefined) &&
+            /!*(expense.empid !== null && expense.empid !== undefined) &&*!/
             expense.amount > 0 &&
-            expense.type?.trim() &&*/
+            expense.type?.trim() &&
             expense.dateofexpense?.trim()
+        );
+    };*/
+
+    const isRowValid = (expense: any): boolean => {
+        return (
+            typeof expense.expensename === "string" &&
+            expense.expensename.trim() !== "" &&
+            expense.amount > 0 &&
+            typeof expense.type === "string" &&
+            expense.type.trim() !== "" &&
+            typeof expense.dateofexpense === "string" &&
+            expense.dateofexpense.trim() !== ""
         );
     };
 
     const handleAddExpense = () => {
         setExpenseList([...expenseList, {
             expensename: "",
-            empid:"",
+            empid: null, // ✅ set to null instead of ""
             amount: 0,
             type:"",
-            dateofexpense:"",
+            /*dateofexpense:"",*/
+            dateofexpense: new Date().toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }).replace(",", ""),
             remarks:"",
         }]);
     };
@@ -304,6 +321,7 @@ const ProjectRow = ({
                                                         style={{ minWidth: '150px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                                                     />
                                                 </td>
+                                                {/*commented to test -1
                                                 <td className="py-2 px-4 w-56">
                                                     <select
                                                         value={
@@ -329,14 +347,52 @@ const ProjectRow = ({
                                                         }}
                                                     >
                                                         <option value="">Select Employee</option>
+                                                        <option value="others">Others</option>
                                                         {employees.map((emp) => (
                                                             <option key={emp.empid} value={String(emp.empid)}>
                                                                 {emp.employeename}
                                                             </option>
                                                         ))}
-                                                        <option value="others">Others</option>
+
                                                     </select>
+                                                </td>*/}
+                                                <td className="py-2 px-4 w-56">
+                                                    <select
+                                                        value={
+                                                            expense.empid === null
+                                                                ? "others"
+                                                                : expense.empid !== undefined
+                                                                    ? String(expense.empid)
+                                                                    : "others" // ✅ default to "others"
+                                                        }
+                                                        onChange={(e) => {
+                                                            const updatedExpenses = [...expenseList];
+                                                            const selectedId = e.target.value === "others"
+                                                                ? null
+                                                                : parseInt(e.target.value);
+                                                            updatedExpenses[index].empid = selectedId;
+                                                            setExpenseList(updatedExpenses);
+                                                        }}
+                                                        className="border rounded px-2 py-1 w-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        style={{
+                                                            minWidth: '150px',
+                                                            width: '100%',
+                                                            padding: '10px',
+                                                            border: '1px solid #ccc',
+                                                            borderRadius: '5px'
+                                                        }}
+                                                    >
+                                                        <option value="others">Others</option> {/* ✅ Only default option now */}
+                                                        {employees.map((emp) => (
+                                                            <option key={emp.empid} value={String(emp.empid)}>
+                                                                {emp.employeename}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+
+
                                                 </td>
+
                                                 <td className="py-2 px-4">
                                                     <input
                                                         type="number"
@@ -378,6 +434,28 @@ const ProjectRow = ({
                                                 <td className="py-2 px-4 w-48">
                                                     <div className="w-full min-w-[150px]">
                                                         <DatePicker
+                                                            selected={
+                                                                expense.dateofexpense && !isNaN(new Date(expense.dateofexpense).getTime())
+                                                                    ? new Date(expense.dateofexpense)
+                                                                    : new Date() // 🟢 fallback to today
+                                                            }
+                                                            onChange={(date: Date | null) => {
+                                                                const dateToFormat = date || new Date(); // 🟢 fallback to today
+                                                                const formattedDate = dateToFormat.toLocaleDateString("en-GB", {
+                                                                    day: "2-digit",
+                                                                    month: "short",
+                                                                    year: "numeric",
+                                                                }).replace(",", "");
+
+                                                                const updatedExpenses = [...expenseList];
+                                                                updatedExpenses[index].dateofexpense = formattedDate;
+                                                                setExpenseList(updatedExpenses);
+                                                            }}
+                                                            dateFormat="dd MMM yyyy"
+                                                            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        />
+                                                        {/*commented as it sends null*/}
+                                                        {/*<DatePicker
                                                             selected={expense.dateofexpense ? new Date(expense.dateofexpense) : new Date()}
                                                             onChange={(date: Date | null) => {
                                                                 const formattedDate = (date || new Date()).toLocaleDateString("en-GB", {
@@ -393,7 +471,7 @@ const ProjectRow = ({
                                                             dateFormat="dd MMM yyyy"
                                                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 
-                                                        />
+                                                        />*/}
                                                     </div>
                                                 </td>
                                                 <td className="py-2 px-4">
@@ -451,10 +529,23 @@ const ProjectRow = ({
                                     >
                                         Cancel
                                     </button>
+                                    {/*below to test isRowValid*/}
+                                    {/*<pre>{JSON.stringify(expenseList.map(isRowValid), null, 2)}</pre>*/}
+                                    {/*<button
+                                        onClick={handleSave}
+                                        disabled={!expenseList.every(isRowValid)}
+                                        className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer`}
+                                    >
+                                        Update Expense
+                                    </button>*/}
                                     <button
                                         onClick={handleSave}
-                                        disabled={!isRowValid}
-                                        className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer`}
+                                        disabled={!expenseList.every(isRowValid)}
+                                        className={`${
+                                            expenseList.every(isRowValid)
+                                                ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                                                : "bg-gray-400 cursor-not-allowed"
+                                        } text-white font-medium py-2 px-4 rounded-md transition-colors`}
                                     >
                                         Update Expense
                                     </button>

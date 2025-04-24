@@ -451,141 +451,166 @@ const Expenses = () => {
 
                 {/* Modal */}
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                    <h2 className="text-xl font-bold mb-4">Add Expenses</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Expense Name</label>
-                            <Input
-                                type="text"
-                                placeholder="ExpenseName"
-                                value={newExpense.expensename}
-                                onChange={(e) => setNewExpense({...newExpense, expensename: e.target.value})}
-                                className="mb-2"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                            {/* Project Dropdown */}
-                            <select
-                                value={newExpense.projectid}
-                                onChange={(e) => setNewExpense({ ...newExpense, projectid: e.target.value || null })}
-                                className="mb-2 w-full px-4 py-2 border rounded"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            >
-                                <option value="">Select Project</option>
-                                {projects.map((project) => (
-                                    <option key={project.projectid} value={project.projectid}>
-                                        {project.projectname}
-                                    </option>
-                                ))}
-                                <option value={null}>Others</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
-                            {/* Employee Dropdown */}
-                            <select
-                                value={newExpense.empid}
-                                onChange={(e) => setNewExpense({ ...newExpense, empid: e.target.value || null })}
-                                className="mb-2 w-full px-4 py-2 border rounded"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            >
-                                <option value="">Select Employee</option>
-                                {employees.map((employee) => (
-                                    <option key={employee.empid} value={employee.empid}>
-                                        {employee.employeename}
-                                    </option>
-                                ))}
-                                <option value={null}>Others</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                            <Input
-                                type="text"
-                                value={newExpense.amount}
-                                onChange={(e) => {
-                                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                                    setNewExpense({ ...newExpense, amount: numericValue });
-                                }}
-                                className="mb-2 w-full px-4 py-2 border rounded"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Expense Type</label>
-                            <select
-                                value={newExpense.type}
-                                onChange={(e) => setNewExpense({...newExpense, type: e.target.value})}
-                                className="mb-2"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            >
-                                <option value="">Select Expense Type</option>
-                                <option value="Designing">Designing</option>
-                                <option value="Material">Material</option>
-                                <option value="Transport">Transport</option>
-                                <option value="Factory Cost">Factory Cost</option>
-                                <option value="Hardware">Hardware</option>
-                                <option value="Salary">Salary</option>
-                                <option value="Travel">Travel</option>
-                                <option value="Food">Food</option>
-                                <option value="Miscellaneous">Miscellaneous</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Expense</label>
-                            <DatePicker
-                                selected={newExpense.dateofexpense ? new Date(newExpense.dateofexpense) : new Date()}
-                                onChange={(date: Date | null) => {
-                                    if (date) {
-                                        setNewExpense({
-                                            ...newExpense,
-                                            dateofexpense: date.toLocaleDateString("en-GB", {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric",
-                                            }).replace(",", ""),
-                                        });
-                                    }
-                                }}
-                                dateFormat="dd MMM yyyy"
-                                className="mb-2 w-full px-4 py-2 border rounded"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                            <Input
-                                type="text"
-                                placeholder="Remarks"
-                                value={newExpense.remarks}
-                                onChange={(e) => setNewExpense({...newExpense, remarks: e.target.value})}
-                                className="mb-2"
-                                style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
-                            />
-                        </div>
-                        {/* Buttons - Centered */}
-                        <div className="flex justify-center gap-4 mt-4">
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
-                                onClick={() => setIsModalOpen(false)}
-                            >
-                                Cancel
-                            </button>
+                    <div className="max-h-[80vh] overflow-y-auto p-4">
+                        <h2 className="text-xl font-bold mb-4">Add Expenses</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Expense Name</label>
+                                <Input
+                                    type="text"
+                                    placeholder="ExpenseName"
+                                    value={newExpense.expensename}
+                                    onChange={(e) => setNewExpense({...newExpense, expensename: e.target.value})}
+                                    className="mb-2"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                />
+                                {!newExpense.expensename.trim() && (
+                                    <p className="text-red-500 text-sm mt-1">Name is required</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                                {/* Project Dropdown */}
+                                <select
+                                    value={newExpense.projectid}
+                                    onChange={(e) => setNewExpense({ ...newExpense, projectid: e.target.value || null })}
+                                    className="mb-2 w-full px-4 py-2 border rounded"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                >
+                                    <option value="">Select Project</option>
+                                    {projects.map((project) => (
+                                        <option key={project.projectid} value={project.projectid}>
+                                            {project.projectname}
+                                        </option>
+                                    ))}
+                                    <option value={null}>Others</option>
+                                </select>
+                                {!newExpense.projectid?.trim() && (
+                                    <p className="text-red-500 text-sm mt-1">Project Name is required</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
+                                {/* Employee Dropdown */}
+                                <select
+                                    value={newExpense.empid}
+                                    onChange={(e) => setNewExpense({ ...newExpense, empid: e.target.value || null })}
+                                    className="mb-2 w-full px-4 py-2 border rounded"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                >
+                                    <option value="">Select Employee</option>
+                                    {employees.map((employee) => (
+                                        <option key={employee.empid} value={employee.empid}>
+                                            {employee.employeename}
+                                        </option>
+                                    ))}
+                                    <option value={null}>Others</option>
+                                </select>
+                                {!newExpense.empid?.trim?.() && (
+                                    <p className="text-red-500 text-sm mt-1">Employee Name is required</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                <Input
+                                    type="text"
+                                    value={newExpense.amount}
+                                    onChange={(e) => {
+                                        const numericValue = e.target.value.replace(/[^0-9]/g, "");
+                                        setNewExpense({ ...newExpense, amount: numericValue });
+                                    }}
+                                    className="mb-2 w-full px-4 py-2 border rounded"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                />
+                                {!newExpense.amount.trim() && (
+                                    <p className="text-red-500 text-sm mt-1">Amount is required</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Expense Type</label>
+                                <select
+                                    value={newExpense.type}
+                                    onChange={(e) => setNewExpense({...newExpense, type: e.target.value})}
+                                    className="mb-2"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                >
+                                    <option value="">Select Expense Type</option>
+                                    <option value="Designing">Designing</option>
+                                    <option value="Material">Material</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Factory Cost">Factory Cost</option>
+                                    <option value="Hardware">Hardware</option>
+                                    <option value="Salary">Salary</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Miscellaneous">Miscellaneous</option>
+                                </select>
+                                {!newExpense.type.trim() && (
+                                    <p className="text-red-500 text-sm mt-1">Type is required</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Expense</label>
+                                <DatePicker
+                                    selected={newExpense.dateofexpense ? new Date(newExpense.dateofexpense) : new Date()}
+                                    onChange={(date: Date | null) => {
+                                        if (date) {
+                                            setNewExpense({
+                                                ...newExpense,
+                                                dateofexpense: date.toLocaleDateString("en-GB", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                }).replace(",", ""),
+                                            });
+                                        }
+                                    }}
+                                    dateFormat="dd MMM yyyy"
+                                    className="mb-2 w-full px-4 py-2 border rounded"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                />
+                                {!newExpense.dateofexpense.trim() && (
+                                    <p className="text-red-500 text-sm mt-1">Date is required</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                                <Input
+                                    type="text"
+                                    placeholder="Remarks"
+                                    value={newExpense.remarks}
+                                    onChange={(e) => setNewExpense({...newExpense, remarks: e.target.value})}
+                                    className="mb-2"
+                                    style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
+                                />
+                            </div>
+                            {/* Buttons - Centered */}
+                            <div className="flex justify-center gap-4 mt-4">
+                                <button
+                                    className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Cancel
+                                </button>
 
-                            <button
-                                className={`px-4 py-2 rounded ${
-                                    isAdding || !isAddExpenseFormValid ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-500 text-white cursor-pointer"
-                                }`}
-                                onClick={handleAddExpense}
-                                disabled={isAdding || !isAddExpenseFormValid}
-                            >
-                                {isAdding ? "Adding..." : "Add"}
-                            </button>
+                                <button
+                                    className={`px-4 py-2 rounded ${
+                                        isAdding || !isAddExpenseFormValid ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-500 text-white cursor-pointer"
+                                    }`}
+                                    onClick={handleAddExpense}
+                                    disabled={isAdding || !isAddExpenseFormValid}
+                                >
+                                    {isAdding ? "Adding..." : "Add"}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </Modal>
+
+
+
+
+
             </div>)}</div>
     );
 };

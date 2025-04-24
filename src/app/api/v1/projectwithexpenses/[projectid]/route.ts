@@ -54,12 +54,20 @@ export async function PUT(req: NextRequest, {params}: { params: { projectid: num
 
             console.log("Inserting new expenses...");
             body.expenses.forEach((expense: { expensename: string; empid:number; amount: number; type: string; dateofexpense: string; remarks: string }) => {
-                console.log(`Inserting expense: ${expense.expensename}, Amount: ${expense.amount}`);
+                //console.log(`Inserting expense: ${expense.expensename}, Amount: ${expense.amount}`);
                 //formatting the date
+                console.log("expense dateofexpense:", expense.dateofexpense)
                 const date = new Date(expense.dateofexpense);
                 const isoDate = date.getFullYear() + '-' +
                     String(date.getMonth() + 1).padStart(2, '0') + '-' +
                     String(date.getDate()).padStart(2, '0');
+
+                console.log("Inserting expense with projectId:", projectId, "and empid:", expense.empid);
+                console.log("date:", date)
+                console.log("Inserting expense with isoDate:", isoDate);
+                console.log("empid: ", expense.empid);
+
+
                 insertProjectExpenseStmt.run(projectId, expense.expensename, expense.empid, expense.amount, expense.type, isoDate, expense.remarks);
             });
         });
