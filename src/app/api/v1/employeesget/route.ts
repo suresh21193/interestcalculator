@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
                                ) pe ON e.empid = pe.empid
                                ${whereClause}
                            ORDER BY
-                               e.empid  
+                               e.name  
                        asc LIMIT ?
                        OFFSET ?`;
 
@@ -76,6 +76,7 @@ export async function GET(req: NextRequest) {
                        dateofpettycash
                 FROM pettycash
                 WHERE empid = ?
+                order by dateofpettycash asc, pettycashid
             `).all(employee.empid);
             return {
                 ...employee,

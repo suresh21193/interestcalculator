@@ -29,15 +29,40 @@ export async function GET(req: NextRequest) {
         }
 
         // Add condition for filtering by employee IDs if provided
-        if (employeeIds) {
+        /*if (employeeIds) {
             const employeeList = employeeIds.split(',');
             conditions.push(`pe.empid IN (
                 SELECT DISTINCT pem.empid FROM projectexpenses pem 
                 WHERE pem.empid IN (${employeeList.map(() => '?').join(',')})
             )`);
             params.push(...employeeList);
+        }*/
+        if (employeeIds) {
+            const employeeListRaw = employeeIds?.split(',') || [];
+            const employeeList = employeeListRaw.map(id => id === 'null' ? null : id);
+            //const employeeList = employeeIds.split(',').map(id => id === '' ? null : id);
+            console.log("splited:", employeeList);
+            const hasNull = employeeList.includes(null);
+            const filteredEmployeeList = employeeList.filter(id => id !== null);
+
+            let empidCondition = '';
+
+            if (filteredEmployeeList.length > 0 && hasNull) {
+                empidCondition = `(pem.empid IN (${filteredEmployeeList.map(() => '?').join(',')}) OR pem.empid IS NULL)`;
+            } else if (filteredEmployeeList.length > 0) {
+                empidCondition = `pem.empid IN (${filteredEmployeeList.map(() => '?').join(',')})`;
+            } else if (hasNull) {
+                empidCondition = `pem.empid IS NULL`;
+            }
+
+            console.log("empidCondition:", empidCondition);
+            if (empidCondition) {
+                conditions.push(`(${empidCondition.replace(/pem\.empid/g, 'pe.empid')})`);
+                params.push(...filteredEmployeeList);
+            }
         }
-        // Add condition for filtering by employee IDs if provided
+
+        // Add condition for filtering by type IDs if provided
         if (typeIds) {
             const typeList = typeIds.split(',');
             conditions.push(`pe.type IN (
@@ -80,7 +105,7 @@ export async function GET(req: NextRequest) {
                      LEFT JOIN projects p ON pe.projectid = p.projectid
                      LEFT JOIN employees e ON pe.empid = e.empid
                 ${whereClause}
-            ORDER BY projectname ASC
+            ORDER BY pe.dateofexpense ASC, pe.expenseid
                 LIMIT ?
             OFFSET ?;
         `;

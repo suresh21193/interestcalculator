@@ -14,20 +14,50 @@ export async function GET(req: NextRequest) {
 
         const offset = (page - 1) * limit;
         const conditions = [];
-        const values: string[] = [];
+        /*const values: string[] = [];*/
+        const values: (string | null)[] = [];
 
         if (search) {
             conditions.push(`p.projectname LIKE ?`);
             values.push(`%${search}%`);
         }
 
+        console.log("params:", employeeIds);
         if (employeeIds) {
-            const employeeList = employeeIds.split(',');
+            /*const employeeList = employeeIds.split(',');
+            const employeeList = employeeIds.split(',').map(id => id === '' ? null : id);
             conditions.push(`pe.empid IN (
                 SELECT DISTINCT pem.empid FROM projectexpenses pem 
                 WHERE pem.empid IN (${employeeList.map(() => '?').join(',')})
             )`);
-            values.push(...employeeList);
+            values.push(...employeeList);*/
+            const employeeListRaw = employeeIds?.split(',') || [];
+            const employeeList = employeeListRaw.map(id => id === 'null' ? null : id);
+            //const employeeList = employeeIds.split(',').map(id => id === '' ? null : id);
+            console.log("splited:", employeeList);
+            const hasNull = employeeList.includes(null);
+            const filteredEmployeeList = employeeList.filter(id => id !== null);
+
+            let empidCondition = '';
+
+            if (filteredEmployeeList.length > 0 && hasNull) {
+                empidCondition = `(pem.empid IN (${filteredEmployeeList.map(() => '?').join(',')}) OR pem.empid IS NULL)`;
+            } else if (filteredEmployeeList.length > 0) {
+                empidCondition = `pem.empid IN (${filteredEmployeeList.map(() => '?').join(',')})`;
+            } else if (hasNull) {
+                empidCondition = `pem.empid IS NULL`;
+            }
+
+// Then:
+            console.log("empidCondition:", empidCondition);
+            if (empidCondition) {
+                /*conditions.push(`pe.empid IN (
+                SELECT DISTINCT pem.empid FROM projectexpenses pem 
+                WHERE ${empidCondition}
+            )`);*/
+                conditions.push(`(${empidCondition.replace(/pem\.empid/g, 'pe.empid')})`);
+                values.push(...filteredEmployeeList);
+            }
         }
 
         if (locationIds) {
@@ -49,6 +79,7 @@ export async function GET(req: NextRequest) {
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        console.log("whereClause:", whereClause);
 
         const countQuery = `
             SELECT COUNT(DISTINCT p.projectid) as total
@@ -58,7 +89,7 @@ export async function GET(req: NextRequest) {
         `;
 
         const countStmt = db.prepare(countQuery);
-        console.log(countStmt);
+        //console.log(countStmt);
         const countResult = countStmt.get(...values);
         const total = countResult?.total || 0;
 
@@ -81,9 +112,11 @@ export async function GET(req: NextRequest) {
                        OFFSET ?`;
         const stmt = db.prepare(query);
         const projects = stmt.all(...values, limit, offset);
+        //console.log("stmt:", stmt);
 
         //applying filters to child
-        const employeeList = employeeIds ? employeeIds.split(',') : [];
+        // const employeeList = employeeIds ? employeeIds.split(',') : [];
+        // const employeeList = employeeIds.split(',').map(id => id === '' ? null : id);
         const typeList = typeIds ? typeIds.split(',') : [];
 
         const projectsWithExpenses = projects.map((project: { projectid: number; projectname: string; location: string; description: string; projectcost: number; income: number; totalexpense: number; pendingamount: number; projectbalance: number }) => {
@@ -97,19 +130,54 @@ export async function GET(req: NextRequest) {
                        remarks
                 FROM projectexpenses
                 WHERE projectid = ?
+                order by dateofexpense asc
             `;
             const expenseValues: (string | number)[] = [project.projectid];
 
-            if (employeeList.length > 0) {
+            /*if (employeeList.length > 0) {
                 expenseQuery += ` AND empid IN (${employeeList.map(() => '?').join(',')})`;
                 expenseValues.push(...employeeList);
-            }
+            }*/
+            //code to filter null
+            /*const employeeList = employeeIds
+                ? employeeIds.split(',').map(id => id === '' ? null : id)
+                : [];*/
+            console.log("employeeIds child filter:", employeeIds);
+            const employeeListRaw = (employeeIds && employeeIds.trim() !== '') ? employeeIds.split(',') : [];
+            const employeeList = employeeListRaw.map(id => id === 'null' ? null : id);
+            console.log("employeeListRaw child filter:", employeeListRaw);
+            console.log("employeeList child filter:", employeeList);
 
+            const hasNull = employeeList.includes(null);
+            console.log("hasNull child filter:", hasNull);
+            const validEmployeeIds = employeeList.filter(id => id !== null);
+            console.log("validEmployeeIds child filter:", validEmployeeIds);
+            console.log("employeeList.length child filter:", employeeList.length);
+            console.log("validEmployeeIds.length child filter:", validEmployeeIds.length);
+
+            if (employeeList.length > 0) {
+                if (validEmployeeIds.length > 0) {
+                    expenseQuery += ` AND (empid IN (${validEmployeeIds.map(() => '?').join(',')})`;
+                    expenseValues.push(...validEmployeeIds);
+
+                    if (hasNull) {
+                        expenseQuery += ` OR empid IS NULL)`;
+                    } else {
+                        expenseQuery += `)`;
+                    }
+                } else {
+                    // only nulls
+                    expenseQuery += ` AND empid IS NULL`;
+                }
+            }
+            console.log("typeList child filter:", typeList);
             if (typeList.length > 0) {
                 expenseQuery += ` AND type IN (${typeList.map(() => '?').join(',')})`;
                 expenseValues.push(...typeList);
             }
             const expenses = db.prepare(expenseQuery).all(...expenseValues);
+            console.log("expenseQuery child filter:", expenseQuery);
+            console.log("expenses child filter:", expenses);
             // commented
             /*const expenses = db.prepare(`
                 SELECT expenseid,

@@ -157,9 +157,9 @@ const ProjectRow = ({
             await axios.put(`${API_BASE_URL}/api/v1/projectwithexpenses/${project?.projectid}`, payload);
             console.log("Project saved successfully!");
             toast.success("Project updated successfully!");
-            //onChangeHandler();
+            onChangeHandler();
         } catch (error) {
-            console.error("Error saving recipe", error);
+            console.error("Error saving Project", error);
         }
     };
 
@@ -394,7 +394,7 @@ const ProjectRow = ({
                                                 </td>
 
                                                 <td className="py-2 px-4">
-                                                    <input
+                                                    {/*<input
                                                         type="number"
                                                         value={expense.amount}
                                                         onChange={(e) => {
@@ -402,8 +402,20 @@ const ProjectRow = ({
                                                             updatedExpenses[index].amount = parseFloat(e.target.value) || 0;
                                                             setExpenseList(updatedExpenses);
                                                         }}
-                                                        /*onChange={(e) => handleAmountChange(index, e.target.value)}*/
                                                         className="border rounded px-2 py-1 w-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        style={{ minWidth: '150px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                                                    />*/}
+                                                    <input
+                                                        type="number"
+                                                        value={expense.amount === 0 ? "" : expense.amount}
+                                                        onChange={(e) => {
+                                                            const updatedExpenses = [...expenseList];
+                                                            const value = e.target.value;
+
+                                                            updatedExpenses[index].amount = value === "" ? 0 : parseFloat(value);
+                                                            setExpenseList(updatedExpenses);
+                                                        }}
+                                                        className="border rounded px-2 py-1 w-full max-w-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                         style={{ minWidth: '150px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                                                     />
                                                 </td>
@@ -538,6 +550,8 @@ const ProjectRow = ({
                                     >
                                         Update Expense
                                     </button>*/}
+                                    {/*below to test isRowValid*/}
+                                    {/*<pre>{JSON.stringify(expenseList.map(isRowValid), null, 2)}</pre>*/}
                                     <button
                                         onClick={handleSave}
                                         disabled={!expenseList.every(isRowValid)}
@@ -572,6 +586,9 @@ const ProjectRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Project Name"
                         />
+                        {!editedProject.projectname.trim() && (
+                            <p className="text-red-500 text-sm mt-1">Name is required</p>
+                        )}
                     </div>
 
                     <div>
@@ -584,6 +601,9 @@ const ProjectRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Location"
                         />
+                        {!editedProject.location.trim() && (
+                            <p className="text-red-500 text-sm mt-1">Location is required</p>
+                        )}
                     </div>
 
                     <div>
@@ -598,6 +618,9 @@ const ProjectRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Project Cost"
                         />
+                        {!editedProject.projectcost && (
+                            <p className="text-red-500 text-sm mt-1">Project Cost is required</p>
+                        )}
                     </div>
 
                     <div>
@@ -622,15 +645,22 @@ const ProjectRow = ({
                             }
                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-                            placeholder="Income"
+                            placeholder="Amount Paid"
                         />
+                        {!editedProject.income && (
+                            <p className="text-red-500 text-sm mt-1">Amount Paid is required</p>
+                        )}
                     </div>
                 </div>
 
                 <div className="flex justify-end gap-4 mt-6">
                     <button
                         className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-150 font-medium cursor-pointer"
-                        onClick={() => setIsEditModalOpen(false)}
+                        /*onClick={() => setIsEditModalOpen(false)}*/
+                        onClick={() => {
+                            setEditedProject({ ...project }); // 🔄 Reset to original
+                            setIsEditModalOpen(false);       // ❌ Close modal
+                        }}
                     >
                         Cancel
                     </button>

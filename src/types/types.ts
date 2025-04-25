@@ -71,7 +71,7 @@ export type FullProjectResponse = {
 };
 
 export type DropDownResponse = {
-    id: string;
+    id: string | null;
     name: string;
 }
 

@@ -63,6 +63,8 @@ const OfficeExpenses = () => {
     const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
     const [startDate, endDate] = dateRange;
 
+    const totalCost = expenses.reduce((sum, expense) => sum + expense.cost, 0);
+
     useEffect(() => {
         setIsAddExpenseFormValid(
             !!newExpense.name &&
@@ -226,6 +228,13 @@ const OfficeExpenses = () => {
                                 }}/>
                             ))}
                             </tbody>
+                            <tfoot className="bg-gray-100">
+                                <tr>
+                                    <td className="px-6 py-3 text-right font-semibold" colSpan={1}>Total:</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalCost}</td>
+                                    <td colSpan={2}></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 )}
@@ -341,7 +350,19 @@ const OfficeExpenses = () => {
                         <div className="flex justify-center gap-4 mt-4">
                             <button
                                 className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    setNewExpense({
+                                        name: "",
+                                        cost: "",
+                                        dateofexpense: new Date().toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                        }).replace(",", ""),
+                                        remarks: ""
+                                    });
+                                }}
                             >
                                 Cancel
                             </button>

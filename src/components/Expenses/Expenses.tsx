@@ -90,6 +90,12 @@ const Expenses = () => {
     const [startDate, endDate] = dateRange;
 
     const API_BASE_URL = "http://localhost:3000";
+    const totalCost = expenses.reduce((sum, expense) => {
+        if (expense && expense.amount) {
+            return sum + expense.amount;
+        }
+        return sum;
+    }, 0);
 
     useEffect(() => {
         fetchDropdownEmployees();
@@ -182,7 +188,10 @@ const Expenses = () => {
                     const formattedStartDate = formatDate(startDate);
                     const formattedEndDate = formatDate(endDate);
 
-                    const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
+                    /*const employeeIds = selectedEmployees.map(employee => employee.id).join(',');*/
+                    const employeeIds = selectedEmployees
+                        .map(employee => employee.id === null ? 'null' : employee.id)
+                        .join(',');
                     const typeIds = selectedTypes.map(type => type.id).join(',');
                     const response = await fetch(
                         `/api/v1/expensesget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&typeIds=${typeIds}`+
@@ -407,6 +416,13 @@ const Expenses = () => {
                                 }}/>
                             ))}
                             </tbody>
+                            <tfoot className="bg-gray-100">
+                                <tr>
+                                    <td className="px-6 py-3 text-right font-semibold" colSpan={3}>Total:</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalCost}</td>
+                                    <td colSpan={3}></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 )}
@@ -588,7 +604,23 @@ const Expenses = () => {
                             <div className="flex justify-center gap-4 mt-4">
                                 <button
                                     className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
-                                    onClick={() => setIsModalOpen(false)}
+                                    /*onClick={() => setIsModalOpen(false)}*/
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        setNewExpense({
+                                            projectid: "",
+                                            empid: "",
+                                            expensename: "",
+                                            amount: "",
+                                            type: "",
+                                            dateofexpense: new Date().toLocaleDateString("en-GB", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                            }).replace(",", ""),
+                                            remarks: ""
+                                        });
+                                    }}
                                 >
                                     Cancel
                                 </button>

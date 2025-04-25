@@ -6,9 +6,9 @@ export async function GET(req: NextRequest) {
         // Fetch employees with only id and name
         const employees = db.prepare(`
             SELECT DISTINCT e.empid as id,
-                            e.name as name
+                            COALESCE(e.name, 'Others') AS name
             FROM employees e
-                     INNER JOIN projectexpenses pe ON e.empid = pe.empid 
+                     RIGHT OUTER JOIN projectexpenses pe ON e.empid = pe.empid 
             ORDER BY e.name ASC
         `).all();
 

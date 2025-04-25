@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
                            remarks
                        FROM officeexpenses
                        ${whereClause}
-                       ORDER BY officeexpenseid ASC
+                       ORDER BY dateofexpense ASC, officeexpenseid ASC
                        LIMIT ? OFFSET ?`;
 
         const stmt = db.prepare(query);

@@ -60,6 +60,27 @@ const Employees = () => {
 
     const [isAddEmployeeFormValid, setIsAddEmployeeFormValid] = useState(false);
 
+    const totalPettyCash = employees?.employees.reduce((sum, employee) => {
+        if (employee && employee.pettycashtotal) {
+            return sum + employee.pettycashtotal;
+        }
+        return sum;
+    }, 0);
+
+    const totalExpenseSpent = employees?.employees.reduce((sum, employee) => {
+        if (employee && employee.expensespent) {
+            return sum + employee.expensespent;
+        }
+        return sum;
+    }, 0);
+
+    const totalBalance = employees?.employees.reduce((sum, employee) => {
+        if (employee && employee.calculatedbalance) {
+            return sum + employee.calculatedbalance;
+        }
+        return sum;
+    }, 0);
+
     //control toggle expand
     const [expandedEmployeeId, setExpandedEmployeeId] = useState<number | null>(null);
 
@@ -235,6 +256,14 @@ const Employees = () => {
                                 }}/>
                             ))}
                             </tbody>
+                            <tfoot className="bg-gray-100">
+                                <tr>
+                                    <td className="px-6 py-3 text-right font-semibold" colSpan={2}>Total:</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalPettyCash}</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalExpenseSpent}</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalBalance}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 )}
@@ -291,6 +320,9 @@ const Employees = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newEmployee.name.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Name is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
@@ -302,13 +334,21 @@ const Employees = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newEmployee.role.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Role is required</p>
+                            )}
                         </div>
                     </div>
                     {/* Buttons - Centered */}
                     <div className="flex justify-center gap-4 mt-4">
                         <button
                             className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
-                            onClick={() => setIsModalOpen(false)}
+                            /*onClick={() => setIsModalOpen(false)}*/
+                            onClick={() => {
+                                setIsModalOpen(false);
+                                setNewEmployee({name: "", role: ""});
+                            }}
+
                         >
                             Cancel
                         </button>

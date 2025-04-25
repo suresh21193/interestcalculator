@@ -67,7 +67,7 @@ const EmployeeRow = ({
             setIsEditModalOpen(false);
             refreshEmployees();
         } catch (error) {
-            console.error("Error updating ingredient:", error);
+            console.error("Error updating Employee:", error);
         } finally {
             setIsLoading(false);
         }
@@ -118,10 +118,18 @@ const EmployeeRow = ({
         setPettycashList(updatedPettycashes);
     };
 
-    const isRowValid = (pettycash: any) => {
+    /*const isRowValid = (pettycash: any) => {
         return (
             pettycash.pettycash?.trim() &&
             pettycash.dateofpettycash?.trim()
+        );
+    };*/
+
+    const isRowValid = (pettycash: any): boolean => {
+        return (
+            pettycash.pettycash > 0 &&
+            typeof pettycash.dateofpettycash === "string" &&
+            pettycash.dateofpettycash.trim() !== ""
         );
     };
 
@@ -213,7 +221,7 @@ const EmployeeRow = ({
                                             <tr key={index} className="border-b hover:bg-gray-50">
 
                                                 <td className="py-2 px-4 w-[150px]" >
-                                                    <input
+                                                    {/*<input
                                                         type="number"
                                                         value={pettycash.pettycash}
                                                         onChange={(e) => {
@@ -221,7 +229,19 @@ const EmployeeRow = ({
                                                             updatedPettycash[index].pettycash = parseFloat(e.target.value) || 0;
                                                             setPettycashList(updatedPettycash);
                                                         }}
-                                                        /*onChange={(e) => handleAmountChange(index, e.target.value)}*/
+                                                        className="border rounded px-2 py-1 w-full max-w-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        style={{ minWidth: '150px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                                                    />*/}
+                                                    <input
+                                                        type="number"
+                                                        value={pettycash.pettycash === 0 ? "" : pettycash.pettycash}
+                                                        onChange={(e) => {
+                                                            const updatedPettycash = [...pettycashList];
+                                                            const value = e.target.value;
+
+                                                            updatedPettycash[index].pettycash = value === "" ? 0 : parseFloat(value);
+                                                            setPettycashList(updatedPettycash);
+                                                        }}
                                                         className="border rounded px-2 py-1 w-full max-w-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                         style={{ minWidth: '150px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                                                     />
@@ -289,10 +309,21 @@ const EmployeeRow = ({
                                     >
                                         Cancel
                                     </button>
-                                    <button
+                                    {/*<button
                                         onClick={handleSave}
                                         disabled={!isRowValid}
                                         className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer`}
+                                    >
+                                        Update Pettycash
+                                    </button>*/}
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={!pettycashList.every(isRowValid)}
+                                        className={`${
+                                            pettycashList.every(isRowValid)
+                                                ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                                                : "bg-gray-400 cursor-not-allowed"
+                                        } text-white font-medium py-2 px-4 rounded-md transition-colors`}
                                     >
                                         Update Pettycash
                                     </button>
@@ -319,6 +350,9 @@ const EmployeeRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Employee name"
                         />
+                        {!editedEmployee.name.trim() && (
+                            <p className="text-red-500 text-sm mt-1">Name is required</p>
+                        )}
                     </div>
 
                     <div>
@@ -331,6 +365,9 @@ const EmployeeRow = ({
                             style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                             placeholder="Employee name"
                         />
+                        {!editedEmployee.role.trim() && (
+                            <p className="text-red-500 text-sm mt-1">Role is required</p>
+                        )}
                     </div>
 
                 </div>
@@ -338,7 +375,11 @@ const EmployeeRow = ({
                 <div className="flex justify-end gap-4 mt-6">
                     <button
                         className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-150 font-medium cursor-pointer"
-                        onClick={() => setIsEditModalOpen(false)}
+                        /*onClick={() => setIsEditModalOpen(false)}*/
+                        onClick={() => {
+                            setEditedEmployee({ ...employeeWithPettyCash }); // 🔄 Reset to original
+                            setIsEditModalOpen(false);       // ❌ Close modal
+                        }}
                     >
                         Cancel
                     </button>

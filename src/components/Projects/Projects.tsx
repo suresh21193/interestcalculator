@@ -79,6 +79,41 @@ const Projects = () => {
         setExpandedProjectId(prev => (prev === projectid ? null : projectid));
     };
 
+    const totalProjectCost = projects?.projects.reduce((sum, project) => {
+        if (project && project.projectcost) {
+            return sum + project.projectcost;
+        }
+        return sum;
+    }, 0);
+
+    const totalAmountPaid = projects?.projects.reduce((sum, project) => {
+        if (project && project.income) {
+            return sum + project.income;
+        }
+        return sum;
+    }, 0);
+
+    const totalAmountPending = projects?.projects.reduce((sum, project) => {
+        if (project && project.pendingamount) {
+            return sum + project.pendingamount;
+        }
+        return sum;
+    }, 0);
+
+    const totalExpense = projects?.projects.reduce((sum, project) => {
+        if (project && project.totalexpense) {
+            return sum + project.totalexpense;
+        }
+        return sum;
+    }, 0);
+
+    const totalProjectBalance = projects?.projects.reduce((sum, project) => {
+        if (project && project.projectbalance) {
+            return sum + project.projectbalance;
+        }
+        return sum;
+    }, 0);
+
     useEffect(() => {
         fetchEmployees();
     }, []);
@@ -105,7 +140,10 @@ const Projects = () => {
             const fetchProjects = async () => {
                 try {
                     setIsLoading(true);
-                    const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
+                    //const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
+                    const employeeIds = selectedEmployees
+                        .map(employee => employee.id === null ? 'null' : employee.id)
+                        .join(',');
                     const locationIds = selectedLocations.map(location => location.id).join(',');
                     const typeIds = selectedTypes.map(type => type.id).join(',');
                     console.log(selectedEmployees);
@@ -344,6 +382,16 @@ const Projects = () => {
                                 }}/>
                             ))}
                             </tbody>
+                            <tfoot className="bg-gray-100">
+                                <tr>
+                                    <td className="px-6 py-3 text-right font-semibold" colSpan={3}>Total:</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalProjectCost}</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalAmountPaid}</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalAmountPending}</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalExpense}</td>
+                                    <td className="px-6 py-3 font-semibold">₹ {totalProjectBalance}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 )}
@@ -399,6 +447,9 @@ const Projects = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newProject.projectname.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Name is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
@@ -409,6 +460,9 @@ const Projects = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newProject.location.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Location is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Project Cost</label>
@@ -422,6 +476,9 @@ const Projects = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newProject.projectcost.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Project Cost is required</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -445,12 +502,19 @@ const Projects = () => {
                                 className="mb-2"
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
+                            {!newProject.income.trim() && (
+                                <p className="text-red-500 text-sm mt-1">Amount Paid is required</p>
+                            )}
                         </div>
                         {/* Buttons - Centered */}
                         <div className="flex justify-center gap-4 mt-4">
                             <button
                                 className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
-                                onClick={() => setIsModalOpen(false)}
+                                /*onClick={() => setIsModalOpen(false)}*/
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    setNewProject({projectname: "", location: "", projectcost: "", description: "", income: ""}); // Reset form
+                                }}
                             >
                                 Cancel
                             </button>
