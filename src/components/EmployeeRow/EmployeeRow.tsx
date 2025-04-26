@@ -207,8 +207,10 @@ const EmployeeRow = ({
                         {/* Expandable Content */}
                         <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-screen' : 'max-h-0'}`}>
                             <div className="p-6 border-t flex flex-col">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full table-auto  bg-white">
+                                {/*<div className="overflow-x-auto">
+                                    <table className="w-full table-auto  bg-white">*/}
+                                <div className="w-full max-h-[400px] overflow-y-auto">
+                                    <table className="w-full table-auto bg-white">
                                         <thead>
                                         <tr className="bg-gray-100 border-b">
                                             <th className="py-2 px-4 text-left font-semibold text-gray-700">Petty Cash</th>

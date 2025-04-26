@@ -51,8 +51,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ finishLoading }) => {
                     <Image
                         src="/images/logo/vistalogo.jpeg"
                         alt="Logo"
-                        width={60}
-                        height={60}
+                        width={150}
+                        height={150}
                         priority
                     />
                 </div>
@@ -60,13 +60,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ finishLoading }) => {
 
             {/* Bottom Section: Powered By */}
             <div className="flex flex-col items-center pb-4">
-                <Image
+                {/*<Image
                     src="/images/logo/creator/brandzon_logo.png"
                     alt="Brandzon Digital Logo"
                     width={200} // Adjusted size for smaller screens
                     height={200}
                     className="max-h-[10vh] md:max-h-[15vh]"
-                />
+                />*/}
                 <span className="text-gray-700 font-medium text-sm md:text-base">
                     Powered by BRANDZON DIGITAL
                 </span>

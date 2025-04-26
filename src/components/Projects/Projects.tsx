@@ -304,14 +304,16 @@ const Projects = () => {
         </div>) : (
             <div className="container mx-auto px-4 py-8">
                 <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
-                    <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
+                    {/*<div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>*/}
+                    <div style={{ flex: 1 }}>
                         <input
                             ref={searchInputRef}
                             type="text"
                             placeholder="Search projects..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full px-4 py-2 border rounded shadow-sm mb-4"
+                            /*className="w-full px-4 py-2 border rounded shadow-sm"*/
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
                         />
                     </div>
                     <div style={{flex: 1}}>

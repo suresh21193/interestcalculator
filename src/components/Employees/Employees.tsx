@@ -206,7 +206,7 @@ const Employees = () => {
             <ClipLoader size={75} color={"#4A90E2"} loading={isLoading}/>
         </div>) : (
             <div className="container mx-auto px-4 py-8">
-                <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
+                {/*<div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
                     <div style={{display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center'}}>
                         <input
                             ref={searchInputRef}
@@ -226,6 +226,32 @@ const Employees = () => {
                                 label: role.name
                             }))}
                             onChange={handleRolesChange} // Use new handler instead
+                            placeholder="Select Role"
+                        />
+                    </div>
+                </div>*/}
+
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Search employees..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            // className="w-full px-4 py-2 border rounded shadow-sm" // Removed mb-4
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
+                        />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <Select
+                            isMulti
+                            options={roles.map(role => ({ value: role.id, label: role.name }))}
+                            value={selectedRoles.map(role => ({
+                                value: role.id,
+                                label: role.name
+                            }))}
+                            onChange={handleRolesChange}
                             placeholder="Select Role"
                         />
                     </div>
