@@ -131,7 +131,7 @@ const Projects = () => {
             !!newProject.projectname &&
             !!newProject.location &&
             !!newProject.projectcost &&
-            !!Number(newProject.income)
+            !!newProject.income
         );
     }, [newProject]);
 
