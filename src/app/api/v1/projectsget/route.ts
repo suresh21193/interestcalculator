@@ -130,7 +130,6 @@ export async function GET(req: NextRequest) {
                        remarks
                 FROM projectexpenses
                 WHERE projectid = ?
-                order by dateofexpense asc
             `;
             const expenseValues: (string | number)[] = [project.projectid];
 
@@ -175,6 +174,8 @@ export async function GET(req: NextRequest) {
                 expenseQuery += ` AND type IN (${typeList.map(() => '?').join(',')})`;
                 expenseValues.push(...typeList);
             }
+            expenseQuery += `order by dateofexpense asc`;
+            console.log("expenseQuery:", expenseQuery);
             const expenses = db.prepare(expenseQuery).all(...expenseValues);
             console.log("expenseQuery child filter:", expenseQuery);
             console.log("expenses child filter:", expenses);

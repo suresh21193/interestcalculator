@@ -127,7 +127,8 @@ const EmployeeRow = ({
 
     const isRowValid = (pettycash: any): boolean => {
         return (
-            pettycash.pettycash > 0 &&
+            /*pettycash.pettycash > 0 &&*/
+            pettycash.pettycash !== "" &&
             typeof pettycash.dateofpettycash === "string" &&
             pettycash.dateofpettycash.trim() !== ""
         );
