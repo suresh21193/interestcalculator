@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
         const roleIds = searchParams.get('roleIds');
 
         const offset = (page - 1) * limit;
-        const conditions = [];
+        /*const conditions = [];*/
+        const conditions = [`e.status = 'Active'`];
         const values: string[] = [];
 
         if (search) {

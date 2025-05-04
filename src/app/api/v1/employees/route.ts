@@ -3,7 +3,7 @@ import db from '@/lib/db';
 
 export async function GET(req: NextRequest) {
     try {
-        // Fetch employees with only id, name and cash
+        // Fetch employees with only id, name
         const employees = db.prepare(`
             SELECT distinct 
                 empid as empid,

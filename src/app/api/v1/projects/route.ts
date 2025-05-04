@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
         }
         // Insert into SQLite database
         const stmt = db.prepare(`
-      INSERT INTO projects (projectname, location, projectcost, description, income) VALUES (?, ?, ?, ?, ?)
+      INSERT INTO projects (projectname, location, projectcost, description) VALUES (?, ?, ?, ?)
     `);
-        stmt.run(body.projectname, body.location, body.projectcost, body.description, body.income);
+        stmt.run(body.projectname, body.location, body.projectcost, body.description);
 
         return NextResponse.json(
             {

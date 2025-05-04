@@ -39,17 +39,20 @@ interface Pettycash {
     dateofpettycash: string;
 }
 
+interface Amountreceived {
+    amountreceivedid: number;
+    projectid: number;
+    amountreceived: number;
+    dateofamountreceived: string;
+}
+
 export type EmployeeWithPettycashResponse = Employee & {
     pettycash: Pettycash[];
 };
 
 export type ProjectWithExpensesResponse = Project & {
     expenses: Expense[];
-};
-
-export type RecipeWithIngredientsAndPriceResponse = ProjectWithExpensesResponse & {
-    adjusted_ingredients_cost: number;
-    display_price: number;
+    amountreceived: Amountreceived[];
 };
 
 // Pagination type

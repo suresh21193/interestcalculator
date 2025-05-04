@@ -21,7 +21,7 @@ export async function GET(
     }
     // Fetch employees with only id, name and cash
     const projects = db.prepare(`
-        select projectid, projectname, location, projectcost,description,income from projects
+        select projectid, projectname, location, projectcost,description from projects
         where projectid = ${params.projectId};
            ;
     `).all();
@@ -51,7 +51,7 @@ export async function PUT(
 
         // Parse request body
         const data = await req.json();
-        const { projectname, location, projectcost, description, income } = data;
+        const { projectname, location, projectcost, description } = data;
 
         // Validate required fields
         if (!projectname || location === undefined || !projectcost  === undefined ) {
@@ -62,10 +62,10 @@ export async function PUT(
 
         // Update the ingredient
         const updateStmt = db.prepare(
-            'UPDATE projects SET projectname=?, location=?, projectcost = ?, description=?, income = ? WHERE projectid = ?'
+            'UPDATE projects SET projectname=?, location=?, projectcost = ?, description=? WHERE projectid = ?'
         );
 
-        updateStmt.run(projectname, location, projectcost, description, income, projectId);
+        updateStmt.run(projectname, location, projectcost, description, projectId);
 
         // Get the updated employee
         const getStmt = db.prepare('SELECT * FROM projects WHERE projectid = ?');

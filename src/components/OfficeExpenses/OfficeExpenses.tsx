@@ -7,6 +7,8 @@ import {Input} from "@headlessui/react";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker"; // 👈 CHANGED: Import DatePicker
 import "react-datepicker/dist/react-datepicker.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface OfficeExpense {
     officeexpenseid: number;
@@ -64,6 +66,67 @@ const OfficeExpenses = () => {
     const [startDate, endDate] = dateRange;
 
     const totalCost = expenses.reduce((sum, expense) => sum + expense.cost, 0);
+
+    //download
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        doc.text("Office Expenses Report", 14, 15);
+
+        // Add filter details if present
+        const filters: string[] = [];
+        if (search) filters.push(`Search: ${search}`);
+        if (startDate && endDate) {
+            const formattedStart = startDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+            const formattedEnd = endDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+            filters.push(`Date Range: ${formattedStart} - ${formattedEnd}`);
+        }
+
+        if (filters.length > 0) {
+            doc.text("Filters:", 14, 23);
+            filters.forEach((line, i) => {
+                doc.text(line, 20, 30 + i * 7);  // Indent filter lines under "Filters:"
+            });
+        }
+
+        const tableStartY = filters.length > 0 ? 30 + filters.length * 7 + 5 : 25;
+
+        const tableColumn = ["Name", "Amount", "Date of expense", "Remarks"];
+        const tableRows = expenses.map(exp => [
+            exp.name,
+            `Rs. ${exp.cost}`,
+            exp.dateofexpense,
+            exp.remarks
+        ]);
+
+        const total = expenses.reduce((sum, exp) => sum + parseFloat(exp.cost), 0);
+
+        tableRows.push([
+            { content: "Total", colSpan: 1, styles: { fontStyle: 'bold', halign: 'right' } },
+            { content: `Rs. ${total.toFixed(2)}`, colSpan: 1, styles: { fontStyle: 'bold' } },
+            "", ""
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: tableStartY,
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: [41, 128, 185] },
+            didParseCell: (data) => {
+                // Check if the current row is the total row
+                if (data.row.index === tableRows.length - 1) {
+                    // Change the background color for the total row
+                    data.cell.styles.fillColor = [220, 220, 220]; // Light grey background
+                }
+            }
+        });
+
+        doc.save("Office_Expenses_Report.pdf");
+    };
+
+
+
+
 
     useEffect(() => {
         setIsAddExpenseFormValid(
@@ -206,6 +269,17 @@ const OfficeExpenses = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800" // 🔵 Updated same as input field
                         />
                     </div>
+                    <div className="flex justify-end items-center gap-4 sm:w-auto">
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm2 1v12h10V4H5zm5 9a1 1 0 001-1V8h2l-3-3-3 3h2v4a1 1 0 001 1z" />
+                            </svg>
+                            Download PDF
+                        </button>
+                    </div>
                 </div>
 
                 {expenses.length === 0 ? (
@@ -215,10 +289,10 @@ const OfficeExpenses = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expense Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Expense</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Expense Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Amount</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Date of Expense</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Remarks</th>
 
                             </tr>
                             </thead>

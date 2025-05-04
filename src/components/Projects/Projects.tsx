@@ -8,6 +8,15 @@ import toast from "react-hot-toast";
 import {DropDownResponse, FullProjectResponse} from "@/types/types";
 import Select from 'react-select';
 import axios from 'axios';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+declare module "jspdf" {
+    interface jsPDF {
+        lastAutoTable?: {
+            finalY: number;
+        };
+    }
+}
 
 interface Project {
     projectid: number;
@@ -64,7 +73,7 @@ const Projects = () => {
         location: "",
         projectcost: "",
         description: "",
-        income: "",
+        /*income: "",*/
     });
     const [isAdding, setIsAdding] = useState(false);
     const [addError, setAddError] = useState<string | null>(null);
@@ -77,6 +86,189 @@ const Projects = () => {
 
     const toggleProjectExpand = (projectid: number) => {
         setExpandedProjectId(prev => (prev === projectid ? null : projectid));
+    };
+
+    // to handle EmployeeName in download
+    const getEmployeeNameById = (empid: string) => {
+        const employee = employees.find(e => e.id === empid);  // Assuming `id` is the unique identifier
+        return employee ? employee.name : "Others";  // Return "Unknown" if employee is not found
+    };
+
+    //download
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4"
+        });
+
+        doc.text("Projects Report", 14, 15);
+
+        const filters: string[] = [];
+        if (search) filters.push(`Search: ${search}`);
+        if (selectedEmployees.length > 0)
+            filters.push(`Employees: ${selectedEmployees.map(e => e.name).join(", ")}`);
+        if (selectedLocations.length > 0)
+            filters.push(`Locations: ${selectedLocations.map(l => l.name).join(", ")}`);
+        if (selectedTypes.length > 0)
+            filters.push(`Types: ${selectedTypes.map(t => t.name).join(", ")}`);
+
+        if (filters.length > 0) {
+            doc.text("Filters:", 14, 23);
+            filters.forEach((line, i) => {
+                doc.text(line, 20, 30 + i * 7);
+            });
+        }
+
+        const tableStartY = filters.length > 0 ? 30 + filters.length * 7 + 5 : 25;
+
+        const tableColumn = ["Project Name", "Location", "Project Cost", "Amount Received", "Amount Pending", "Expense", "Profit"];
+        const tableRows = projects?.projects.map((proj) => [
+            proj.projectname,
+            proj.location,
+            `Rs. ${proj.projectcost}`,
+            `Rs. ${proj.income}`,
+            `Rs. ${proj.pendingamount}`,
+            `Rs. ${proj.totalexpense}`,
+            `Rs. ${proj.projectbalance}`,
+        ]) || [];
+
+        const totalsRow = [
+            "TOTAL",
+            "",
+            `Rs. ${totalProjectCost}`,
+            `Rs. ${totalAmountPaid}`,
+            `Rs. ${totalAmountPending}`,
+            `Rs. ${totalExpense}`,
+            `Rs. ${totalProjectBalance}`
+        ];
+        tableRows.push(totalsRow);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: tableStartY,
+            styles: {
+                fontSize: 9,
+                cellPadding: 2,
+                overflow: 'linebreak'
+            },
+            columnStyles: {
+                0: { cellWidth: 50 },
+                1: { cellWidth: 40 }
+            },
+            headStyles: {
+                fillColor: [41, 128, 185],
+                halign: 'left'  // Aligning header to the left
+            },
+            didParseCell: (data) => {
+                const lastRowIndex = tableRows.length - 1;
+                if (data.row.index === lastRowIndex) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [220, 220, 220];
+                }
+            }
+        });
+
+        let currentY = doc.lastAutoTable?.finalY || 0;
+        currentY += 10;
+
+        projects?.projects.forEach((proj, idx) => {
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 128);
+            doc.text(`${idx + 1}. ${proj.projectname}`, 14, currentY);
+            currentY += 6;
+
+            // Expenses Table
+            if (proj.expenses && proj.expenses.length > 0) {
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                doc.text("Expenses", 20, currentY);
+                currentY += 5;
+
+                // Updated Expense Table Columns Order
+                const expenseTableColumns = [
+                    "Expense Name", "Employee Name", "Amount", "Type", "Date of Expense", "Remarks"
+                ];
+
+                const expenseRows = proj.expenses.map(exp => [
+                    exp.expensename,
+                    getEmployeeNameById(exp.empid),  // Mapping empid to employee name
+                    `Rs. ${exp.amount}`,
+                    exp.type,
+                    exp.dateofexpense,
+                    exp.remarks
+                ]);
+
+                // Add total row for expense
+                const totalExpense = proj.expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+                expenseRows.push(["TOTAL", "", `Rs. ${totalExpense.toFixed(2)}`, "", "", ""]);
+
+                autoTable(doc, {
+                    head: [expenseTableColumns],
+                    body: expenseRows,
+                    startY: currentY,
+                    margin: { left: 20 },
+                    styles: {
+                        fontSize: 9,
+                        cellPadding: 2,
+                        overflow: 'linebreak'
+                    },
+                    headStyles: {
+                        fillColor: [41, 128, 185],
+                        halign: 'left'  // Aligning header to the left
+                    },
+                    didParseCell: (data) => {
+                        if (data.row.index === expenseRows.length - 1) {
+                            data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.fillColor = [220, 220, 220];
+                        }
+                    }
+                });
+
+                currentY = doc.lastAutoTable?.finalY || 0;
+                currentY += 5;
+            }
+
+            // Amount Received Table
+            if (proj.amountreceived && proj.amountreceived.length > 0) {
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                doc.text("Amount Received", 20, currentY);
+                currentY += 5;
+
+                const receivedRows = proj.amountreceived.map(rec => [rec.dateofamountreceived, `Rs. ${rec.amountreceived}`]);
+                const totalReceived = proj.amountreceived.reduce((sum, r) => sum + parseFloat(r.amountreceived), 0);
+                receivedRows.push(["TOTAL", `Rs. ${totalReceived.toFixed(2)}`]);
+
+                autoTable(doc, {
+                    head: [["Date of Amount Received", "Amount Received"]],
+                    body: receivedRows,
+                    startY: currentY,
+                    margin: { left: 20 },
+                    styles: {
+                        fontSize: 9,
+                        cellPadding: 2,
+                        overflow: 'linebreak'
+                    },
+                    headStyles: {
+                        fillColor: [41, 128, 185],
+                        halign: 'left'  // Aligning header to the left
+                    },
+                    didParseCell: (data) => {
+                        if (data.row.index === receivedRows.length - 1) {
+                            data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.fillColor = [220, 220, 220];
+                        }
+                    }
+                });
+
+                currentY = doc.lastAutoTable?.finalY || 0;
+                currentY += 10;
+            }
+        });
+
+        doc.save("Projects_Report.pdf");
     };
 
     const totalProjectCost = projects?.projects.reduce((sum, project) => {
@@ -130,8 +322,7 @@ const Projects = () => {
         setIsAddProjectFormValid(
             !!newProject.projectname &&
             !!newProject.location &&
-            !!newProject.projectcost &&
-            !!newProject.income
+            !!newProject.projectcost
         );
     }, [newProject]);
 
@@ -194,7 +385,7 @@ const Projects = () => {
                     location: newProject.location,
                     projectcost: parseFloat(newProject.projectcost),
                     description: newProject.description,
-                    income: parseFloat(newProject.income),
+                    /*income: parseFloat(newProject.income),*/
                 }),
             });
 
@@ -206,7 +397,7 @@ const Projects = () => {
             setProjectsAdd((prev) => [...prev, data.project]); // Add new Project to the list
             toast.success("project added successfully");
             setIsModalOpen(false); // Close modal
-            setNewProject({projectname: "", location: "", projectcost: "", description: "", income: ""}); // Reset form
+            setNewProject({projectname: "", location: "", projectcost: "", description: ""}); // Reset form
         } catch (err) {
             console.error("Error adding project:", err);
             setAddError("Failed to add project. Please try again.");
@@ -352,6 +543,17 @@ const Projects = () => {
                             placeholder="Select Types"
                         />
                     </div>
+                    <div className="flex justify-end items-center gap-4 sm:w-auto">
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm2 1v12h10V4H5zm5 9a1 1 0 001-1V8h2l-3-3-3 3h2v4a1 1 0 001 1z" />
+                            </svg>
+                            Download PDF
+                        </button>
+                    </div>
                 </div>
 
                 {projects?.projects.length === 0 ? (
@@ -361,15 +563,15 @@ const Projects = () => {
                         <table className=" min-w-full table-auto border-collapse divide-y divide-gray-200 ">
                             <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Cost</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Pending</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Expense</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Balance</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Project Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Location</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Project Cost</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Amount Received</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Amount Pending</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Total Expense</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Profit</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
 
                             </tr>
                             </thead>
@@ -492,7 +694,7 @@ const Projects = () => {
                                 style={{width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}
                             />
                         </div>
-                        <div>
+                        {/*<div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid</label>
                             <Input
                                 type="text"
@@ -507,7 +709,7 @@ const Projects = () => {
                             {!newProject.income.trim() && (
                                 <p className="text-red-500 text-sm mt-1">Amount Paid is required</p>
                             )}
-                        </div>
+                        </div>*/}
                         {/* Buttons - Centered */}
                         <div className="flex justify-center gap-4 mt-4">
                             <button
@@ -515,7 +717,7 @@ const Projects = () => {
                                 /*onClick={() => setIsModalOpen(false)}*/
                                 onClick={() => {
                                     setIsModalOpen(false);
-                                    setNewProject({projectname: "", location: "", projectcost: "", description: "", income: ""}); // Reset form
+                                    setNewProject({projectname: "", location: "", projectcost: "", description: ""}); // Reset form
                                 }}
                             >
                                 Cancel

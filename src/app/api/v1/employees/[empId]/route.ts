@@ -112,7 +112,8 @@ export async function DELETE(
         }
 
         // Delete the ingredient
-        const deleteStmt = db.prepare('DELETE FROM employees WHERE empid = ?');
+        //const deleteStmt = db.prepare('DELETE FROM employees WHERE empid = ?');
+        const deleteStmt = db.prepare('UPDATE employees SET status = \'Inactive\' WHERE empid = ?');
         deleteStmt.run(empId);
 
         return NextResponse.json({

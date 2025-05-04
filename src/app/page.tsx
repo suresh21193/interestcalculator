@@ -31,7 +31,7 @@ const HomePage = () => {
                   <Tab
                       key={index}
                       className={({ selected }) =>
-                          `flex-1 py-2 text-center font-medium cursor-pointer ${
+                          `flex-1 py-2 text-center font-bold cursor-pointer ${
                               selected ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"
                           }`
                       }

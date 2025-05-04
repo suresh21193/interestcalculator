@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
             /*const employeeList = employeeIds.split(',');
             const employeeList = employeeIds.split(',').map(id => id === '' ? null : id);
             conditions.push(`pe.empid IN (
-                SELECT DISTINCT pem.empid FROM projectexpenses pem 
+                SELECT DISTINCT pem.empid FROM projectexpenses pem
                 WHERE pem.empid IN (${employeeList.map(() => '?').join(',')})
             )`);
             values.push(...employeeList);*/
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
             console.log("empidCondition:", empidCondition);
             if (empidCondition) {
                 /*conditions.push(`pe.empid IN (
-                SELECT DISTINCT pem.empid FROM projectexpenses pem 
+                SELECT DISTINCT pem.empid FROM projectexpenses pem
                 WHERE ${empidCondition}
             )`);*/
                 conditions.push(`(${empidCondition.replace(/pem\.empid/g, 'pe.empid')})`);
@@ -100,14 +100,17 @@ export async function GET(req: NextRequest) {
                            p.location,
                            p.description,
                            p.projectcost,
-                           p.income,
-                           (p.projectcost - p.income) AS pendingamount,
+                           IFNULL(ar.amountreceived, 0)                   AS income,
+                           (p.projectcost - IFNULL(ar.amountreceived, 0)) AS pendingamount,
                            COALESCE(SUM(pe.amount), 0) AS totalexpense,
                            (p.projectcost - COALESCE(SUM(pe.amount), 0)) AS projectbalance
                        FROM projects p
                                 LEFT JOIN projectexpenses pe ON p.projectid = pe.projectid
+                                LEFT JOIN (SELECT projectid, SUM(amountreceived) AS amountreceived
+                                           FROM amountreceived
+                                           GROUP BY projectid) ar ON p.projectid = ar.projectid
                            ${whereClause}
-                       GROUP BY p.projectid, p.projectname, p.location, p.projectcost, p.description, p.income
+                       GROUP BY p.projectid, p.projectname, p.location, p.projectcost, p.description
                        ORDER BY p.projectname asc LIMIT ?
                        OFFSET ?`;
         const stmt = db.prepare(query);
@@ -191,12 +194,25 @@ export async function GET(req: NextRequest) {
                 FROM projectexpenses
                 WHERE projectid = ?
             `).all(project.projectid);*/
+
+            const amountreceived = db.prepare(`
+                SELECT amountreceivedid,
+                       projectid,
+                       amountreceived,
+                       dateofamountreceived
+                FROM amountreceived
+                WHERE projectid = ?
+                ORDER BY dateofamountreceived ASC, amountreceivedid
+            `).all(project.projectid);
+            console.log("amountreceived",amountreceived);
+            console.log("projectid",project.projectid);
             return {
                 ...project,
-                expenses
+                expenses,
+                amountreceived
             };
         });
-
+        console.log("projectsWithExpenses",projectsWithExpenses);
         return NextResponse.json({
             projects: projectsWithExpenses,
             pagination: {

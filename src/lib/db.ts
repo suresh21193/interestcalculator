@@ -15,7 +15,19 @@ db.exec(`
         "empid" INTEGER,
         "name"  TEXT NOT NULL,
         "role"  TEXT NOT NULL,
+        "status" TEXT DEFAULT 'Active',
         PRIMARY KEY ("empid")
+    );
+`);
+
+// Create projects table
+db.exec(`
+    CREATE TABLE IF NOT EXISTS projects  (
+        projectid INTEGER PRIMARY KEY,
+        projectname TEXT NOT NULL,
+        location TEXT NOT NULL,
+        projectcost NUMERIC(15,2),
+        description TEXT
     );
 `);
 
@@ -61,32 +73,21 @@ db.exec(`
     );
 `);
 
-// Create projectexpenses table
+// Create amountreceived table
 db.exec(`
-    CREATE TABLE IF NOT EXISTS projectexpenses  (
-      expenseid INTEGER PRIMARY KEY,
-      projectid INTEGER,
-      empid INTEGER,
-      expensename TEXT NOT NULL,
-      amount NUMERIC(15,2) NOT NULL,
-      type TEXT NOT NULL,
-      dateofexpense DATE NOT NULL,
-      remarks TEXT,
-      FOREIGN KEY (projectid) REFERENCES projects(projectid) ON DELETE CASCADE,
-      FOREIGN KEY (empid) REFERENCES employees(empid) ON DELETE CASCADE
+    CREATE TABLE IF NOT EXISTS amountreceived
+    (
+        "amountreceivedid"     INTEGER,
+        "projectid"           INTEGER,
+        "amountreceived"       NUMERIC(15, 2) NOT NULL,
+        "dateofamountreceived" DATE NOT NULL,
+        PRIMARY KEY ("amountreceivedid"),
+        FOREIGN KEY ("projectid") REFERENCES "projects" ("projectid") ON DELETE CASCADE
     );
 `);
 
-// Create projects table
-db.exec(`
-    CREATE TABLE IF NOT EXISTS projects  (
-        projectid INTEGER PRIMARY KEY,
-        projectname TEXT NOT NULL,
-        location TEXT NOT NULL,
-        projectcost NUMERIC(15,2),
-        description TEXT,
-        income NUMERIC(15,2)
-    );
-`);
+
+
+
 
 export default db;
