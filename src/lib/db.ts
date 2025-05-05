@@ -81,6 +81,7 @@ db.exec(`
         "projectid"           INTEGER,
         "amountreceived"       NUMERIC(15, 2) NOT NULL,
         "dateofamountreceived" DATE NOT NULL,
+        "remarks"         TEXT,
         PRIMARY KEY ("amountreceivedid"),
         FOREIGN KEY ("projectid") REFERENCES "projects" ("projectid") ON DELETE CASCADE
     );
