@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
             SELECT distinct 
                 empid as empid,
                 name as employeename
-            FROM employees order by employeename asc;
+            FROM employees where status='Active' order by employeename asc;
         `).all();
 
         return NextResponse.json({ employees }, { status: 200 });

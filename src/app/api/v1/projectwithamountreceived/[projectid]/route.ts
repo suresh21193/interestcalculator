@@ -26,23 +26,14 @@ export async function PUT(req: NextRequest, {params}: { params: { projectid: num
 
         console.log("Project exists. Proceeding with update...");
 
-        /*const updateRecipeStmt = db.prepare(`
-            UPDATE recipes
-            SET name    = ?,
-                percent = ?,
-                package_cost = ?,
-                miscellaneous_cost = ?,
-                notes = ?
-            WHERE id = ?
-        `);*/
         const deleteProjectAmountReceivedStmt = db.prepare(`
             DELETE
             FROM amountreceived
             WHERE projectid = ?
         `);
         const insertProjectAmountReceivedStmt = db.prepare(`
-            INSERT INTO amountreceived (projectid, amountreceived, dateofamountreceived)
-            VALUES ( ?, ?, ?);
+            INSERT INTO amountreceived (projectid, amountreceived, dateofamountreceived, remarks)
+            VALUES ( ?, ?, ?, ?);
         `);
 
         const transaction = db.transaction(() => {
@@ -51,10 +42,10 @@ export async function PUT(req: NextRequest, {params}: { params: { projectid: num
             deleteProjectAmountReceivedStmt.run(projectId);
 
             console.log("Inserting new amountreceived...");
-            body.amountreceived.forEach((amountreceived: { amountreceived:number; dateofamountreceived: string }) => {
+            body.amountreceived.forEach((amountreceived: { amountreceived:number; dateofamountreceived: string; remarks: string }) => {
                 //console.log(`Inserting expense: ${expense.expensename}, Amount: ${expense.amount}`);
                 //formatting the date
-                console.log("amountreceived dateofamountreceived:", amountreceived.dateofamountreceived)
+                //console.log("amountreceived dateofamountreceived:", amountreceived.dateofamountreceived)
                 const date = new Date(amountreceived.dateofamountreceived);
                 const isoDate = date.getFullYear() + '-' +
                     String(date.getMonth() + 1).padStart(2, '0') + '-' +
@@ -63,13 +54,13 @@ export async function PUT(req: NextRequest, {params}: { params: { projectid: num
                 console.log("date:", date)
                 console.log("Inserting amountreceived with isoDate:", isoDate);
 
-                insertProjectAmountReceivedStmt.run(projectId, amountreceived.amountreceived, amountreceived.dateofamountreceived);
+                insertProjectAmountReceivedStmt.run(projectId, amountreceived.amountreceived, amountreceived.dateofamountreceived, amountreceived.remarks);
             });
         });
 
         transaction();
 
-        console.log("Project updated successfully.");
+        //console.log("Project updated successfully.");
 
         return NextResponse.json({message: "Project updated successfully"}, {status: 200});
     } catch (error) {

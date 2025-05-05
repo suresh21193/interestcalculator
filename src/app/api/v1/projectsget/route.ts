@@ -199,7 +199,8 @@ export async function GET(req: NextRequest) {
                 SELECT amountreceivedid,
                        projectid,
                        amountreceived,
-                       dateofamountreceived
+                       dateofamountreceived,
+                       remarks
                 FROM amountreceived
                 WHERE projectid = ?
                 ORDER BY dateofamountreceived ASC, amountreceivedid

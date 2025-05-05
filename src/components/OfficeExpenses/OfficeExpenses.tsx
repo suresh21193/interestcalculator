@@ -125,9 +125,6 @@ const OfficeExpenses = () => {
     };
 
 
-
-
-
     useEffect(() => {
         setIsAddExpenseFormValid(
             !!newExpense.name &&
@@ -138,56 +135,66 @@ const OfficeExpenses = () => {
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            const fetchExpenses = async () => {
-                try {
-                    setIsLoading(true);
-
-                    //formatting the date to "2025-04-16" in filters
-                    const formatDate = (date: Date | null) => {
-                        if (!date) return "";
-
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, "0");
-                        const day = String(date.getDate()).padStart(2, "0");
-
-                        return `${year}-${month}-${day}`; // e.g., "2025-04-16"
-                    };
-
-                    const formattedStartDate = formatDate(startDate);
-                    const formattedEndDate = formatDate(endDate);
-
-                    const response = await fetch(
-                        `/api/v1/officeexpensesget?page=${page}&limit=${limit}&search=${search}` +
-                        (formattedStartDate ? `&startDate=${formattedStartDate}` : "") +
-                        (formattedEndDate ? `&endDate=${formattedEndDate}` : "")
-                    );
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-
-                    const data: OfficeExpensesResponse = await response.json();
-                    setExpenses(data.expenses);
-                    setPagination(data.pagination);
-                    setError(null);
-                } catch (err) {
-                    console.error("Error fetching Office expenses:", err);
-                    setError("Failed to load Office expenses. Please try again later.");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
 
             fetchExpenses();
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh, dateRange]);
+    }, [page, shouldRefresh, dateRange]);
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+
+            fetchExpenses();
+        }, 2000);
+
+        return () => clearTimeout(delayDebounce);
+    }, [search]);
 
     useEffect(() => {
         setPage(1);
     }, [search]);
 
+    const fetchExpenses = async () => {
+        try {
+            setIsLoading(true);
+
+            //formatting the date to "2025-04-16" in filters
+            const formatDate = (date: Date | null) => {
+                if (!date) return "";
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+
+                return `${year}-${month}-${day}`; // e.g., "2025-04-16"
+            };
+
+            const formattedStartDate = formatDate(startDate);
+            const formattedEndDate = formatDate(endDate);
+
+            const response = await fetch(
+                `/api/v1/officeexpensesget?page=${page}&limit=${limit}&search=${search}` +
+                (formattedStartDate ? `&startDate=${formattedStartDate}` : "") +
+                (formattedEndDate ? `&endDate=${formattedEndDate}` : "")
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: OfficeExpensesResponse = await response.json();
+            setExpenses(data.expenses);
+            setPagination(data.pagination);
+            setError(null);
+        } catch (err) {
+            console.error("Error fetching Office expenses:", err);
+            setError("Failed to load Office expenses. Please try again later.");
+        } finally {
+            setIsLoading(false);
+
+        }
+    };
     // Function to Add New Expense
     const handleAddExpense = async () => {
         setIsAdding(true);

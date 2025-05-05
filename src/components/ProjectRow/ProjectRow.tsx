@@ -39,6 +39,7 @@ interface Amountreceived {
     projectid: number;
     amountreceived: number;
     dateofamountreceived: string;
+    remarks: string;
 }
 
 interface Employee {
@@ -185,11 +186,12 @@ const ProjectRow = ({
         console.log("handle save: " + JSON.stringify(project));
         const payload = {
             projectid: project?.projectid,
-            amountreceived: amountreceivedList.map(({amountreceivedid, projectid, amountreceived, dateofamountreceived}) => ({
+            amountreceived: amountreceivedList.map(({amountreceivedid, projectid, amountreceived, dateofamountreceived, remarks}) => ({
                 amountreceivedid:amountreceivedid,
                 projectid:projectid,
                 amountreceived: amountreceived,
-                dateofamountreceived: dateofamountreceived
+                dateofamountreceived: dateofamountreceived,
+                remarks: remarks
             })),
         };
         try {
@@ -214,35 +216,6 @@ const ProjectRow = ({
         setExpenseList(updatedExpenses);
     };
 
-    /*const handleNameChange = (index, name) => {
-        const updatedExpenses = [...expenseList];
-        const expense = updatedExpenses[index];
-        expense.expensename = name;
-        // tried bby chatgpt
-        // updatedExpenses[index].expensename = name;
-        setExpenseList(updatedExpenses);
-    };*/
-
-    /*const handleAmountChange = (index, amount) => {
-        const updatedExpenses = [...expenseList];
-        const expense = updatedExpenses[index];
-        expense.amount = amount;
-        // tried bby chatgpt
-        // updatedExpenses[index].expensename = name;
-        setExpenseList(updatedExpenses);
-    };*/
-
-
-   /* const isRowValid = (expense: any) => {
-        return (
-            expense.expensename?.trim() &&
-            /!*(expense.empid !== null && expense.empid !== undefined) &&*!/
-            expense.amount > 0 &&
-            expense.type?.trim() &&
-            expense.dateofexpense?.trim()
-        );
-    };*/
-
     const isRowValid = (expense: any): boolean => {
         return (
             typeof expense.expensename === "string" &&
@@ -257,7 +230,7 @@ const ProjectRow = ({
 
     const isRowValidAR = (amountreceived: any): boolean => {
         return (
-            /*pettycash.pettycash > 0 &&*/
+
             amountreceived.amountreceived !== "" &&
             typeof amountreceived.dateofamountreceived === "string" &&
             amountreceived.dateofamountreceived.trim() !== ""
@@ -288,6 +261,7 @@ const ProjectRow = ({
                 month: "short",
                 year: "numeric",
             }).replace(",", ""),
+            remarks:"",
         }]);
     };
 
@@ -684,6 +658,7 @@ const ProjectRow = ({
                                                             <tr className="bg-gray-100 border-b">
                                                                 <th className="py-2 px-4 text-left font-semibold text-gray-700">Amount Received</th>
                                                                 <th className="py-2 px-4 text-left font-semibold text-gray-700">Date of Amount Received</th>
+                                                                <th className="py-2 px-4 text-left font-semibold text-gray-700">Remarks</th>
                                                                 <th className="py-2 px-4 text-left font-semibold text-gray-700">Actions</th>
                                                             </tr>
                                                         </thead>
@@ -705,7 +680,7 @@ const ProjectRow = ({
                                                                         style={{ minWidth: '150px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
                                                                     />
                                                                 </td>
-                                                                <td className="py-2 px-4 w-48">
+                                                                <td className="py-2 px-4">
                                                                     <div className="w-full min-w-[150px]">
                                                                         <DatePicker
                                                                             selected={
@@ -729,6 +704,19 @@ const ProjectRow = ({
                                                                             className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                                         />
                                                                     </div>
+                                                                </td>
+                                                                <td className="py-2 px-4">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={amountreceived.remarks}
+                                                                        onChange={(e) => {
+                                                                            const updatedAmountreceived = [...amountreceivedList];
+                                                                            updatedAmountreceived[index].remarks = e.target.value;
+                                                                            setAmountreceivedList(updatedAmountreceived);
+                                                                        }}
+                                                                        className="border rounded px-2 py-1 w-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                        style={{ minWidth: '250px', width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                                                                    />
                                                                 </td>
                                                                 <td className="py-2 px-4">
                                                                     <button

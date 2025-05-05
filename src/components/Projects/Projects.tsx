@@ -237,12 +237,12 @@ const Projects = () => {
                 doc.text("Amount Received", 20, currentY);
                 currentY += 5;
 
-                const receivedRows = proj.amountreceived.map(rec => [rec.dateofamountreceived, `Rs. ${rec.amountreceived}`]);
+                const receivedRows = proj.amountreceived.map(rec => [rec.dateofamountreceived, `Rs. ${rec.amountreceived}`, rec.remarks]);
                 const totalReceived = proj.amountreceived.reduce((sum, r) => sum + parseFloat(r.amountreceived), 0);
                 receivedRows.push(["TOTAL", `Rs. ${totalReceived.toFixed(2)}`]);
 
                 autoTable(doc, {
-                    head: [["Date of Amount Received", "Amount Received"]],
+                    head: [["Date of Amount Received", "Amount Received", "Remarks"]],
                     body: receivedRows,
                     startY: currentY,
                     margin: { left: 20 },
@@ -328,48 +328,57 @@ const Projects = () => {
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            const fetchProjects = async () => {
-                try {
-                    setIsLoading(true);
-                    //const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
-                    const employeeIds = selectedEmployees
-                        .map(employee => employee.id === null ? 'null' : employee.id)
-                        .join(',');
-                    const locationIds = selectedLocations.map(location => location.id).join(',');
-                    const typeIds = selectedTypes.map(type => type.id).join(',');
-                    console.log(selectedEmployees);
-                    console.log("test empids:");
-                    console.log(employeeIds);
-                    const response = await fetch(
-                        `/api/v1/projectsget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&locationIds=${locationIds}&typeIds=${typeIds}`
-                    );
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-
-                    const data: FullProjectResponse = await response.json();
-                    setProjects(data);
-                    setPagination(data.pagination);
-                    setError(null);
-                } catch (err) {
-                    console.error("Error fetching projects:", err);
-                    setError("Failed to load projects. Please try again later.");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
 
             fetchProjects();
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh, selectedEmployees,selectedLocations, selectedTypes]);
+    }, [page, shouldRefresh, selectedEmployees,selectedLocations, selectedTypes]);
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+
+            fetchProjects();
+        }, 1500);
+
+        return () => clearTimeout(delayDebounce);
+    }, [search]);
 
     useEffect(() => {
         setPage(1);
     }, [search]);
 
+    const fetchProjects = async () => {
+        try {
+            setIsLoading(true);
+            //const employeeIds = selectedEmployees.map(employee => employee.id).join(',');
+            const employeeIds = selectedEmployees
+                .map(employee => employee.id === null ? 'null' : employee.id)
+                .join(',');
+            const locationIds = selectedLocations.map(location => location.id).join(',');
+            const typeIds = selectedTypes.map(type => type.id).join(',');
+            console.log(selectedEmployees);
+            console.log("test empids:");
+            console.log(employeeIds);
+            const response = await fetch(
+                `/api/v1/projectsget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&locationIds=${locationIds}&typeIds=${typeIds}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: FullProjectResponse = await response.json();
+            setProjects(data);
+            setPagination(data.pagination);
+            setError(null);
+        } catch (err) {
+            console.error("Error fetching projects:", err);
+            setError("Failed to load projects. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
     // Function to Add New Project
     const handleAddProject = async () => {
         setIsAdding(true);

@@ -101,39 +101,49 @@ const Employees = () => {
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            const fetchEmployees = async () => {
-                try {
-                    setIsLoading(true);
-                    const roleIds = selectedRoles.map(role => role.id).join(',');
-                    const response = await fetch(
-                        `/api/v1/employeesget?page=${page}&limit=${limit}&search=${search}&roleIds=${roleIds}`
-                    );
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-
-                    const data: FullEmployeeResponse = await response.json();
-                    setEmployees(data);
-                    setPagination(data.pagination);
-                    setError(null);
-                } catch (err) {
-                    console.error("Error fetching employees:", err);
-                    setError("Failed to load employees. Please try again later.");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
 
             fetchEmployees();
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh, selectedRoles]);
+    }, [page, shouldRefresh, selectedRoles]);
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+
+            fetchEmployees();
+        }, 2000);
+
+        return () => clearTimeout(delayDebounce);
+    }, [search]);
 
     useEffect(() => {
         setPage(1);
     }, [search]);
+
+    const fetchEmployees = async () => {
+        try {
+            setIsLoading(true);
+            const roleIds = selectedRoles.map(role => role.id).join(',');
+            const response = await fetch(
+                `/api/v1/employeesget?page=${page}&limit=${limit}&search=${search}&roleIds=${roleIds}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: FullEmployeeResponse = await response.json();
+            setEmployees(data);
+            setPagination(data.pagination);
+            setError(null);
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+            setError("Failed to load employees. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Function to Add New Employee
     const handleAddEmployee = async () => {

@@ -44,6 +44,7 @@ interface Amountreceived {
     projectid: number;
     amountreceived: number;
     dateofamountreceived: string;
+    remarks: string;
 }
 
 export type EmployeeWithPettycashResponse = Employee & {

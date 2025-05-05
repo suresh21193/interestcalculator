@@ -154,76 +154,86 @@ const Expenses = () => {
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            const fetchExpenses = async () => {
-                try {
-                    setIsLoading(true);
-
-                    // 🔹 Convert to backend-compatible format: "19 Apr 2025"
-                    /*const formatDate = (date: Date | null) => {
-                        return date
-                            ? date.toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                            }).replace(",", "")
-                            : "";
-                    };*/
-
-                    /*const formatDate = (date: Date | null) => {
-                        return date
-                            ? date.toISOString().split("T")[0] // outputs "2025-04-01"
-                            : "";
-                    };*/
-
-                    const formatDate = (date: Date | null) => {
-                        if (!date) return "";
-
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, "0");
-                        const day = String(date.getDate()).padStart(2, "0");
-
-                        return `${year}-${month}-${day}`; // e.g., "2025-04-16"
-                    };
-
-                    const formattedStartDate = formatDate(startDate);
-                    const formattedEndDate = formatDate(endDate);
-
-                    /*const employeeIds = selectedEmployees.map(employee => employee.id).join(',');*/
-                    const employeeIds = selectedEmployees
-                        .map(employee => employee.id === null ? 'null' : employee.id)
-                        .join(',');
-                    const typeIds = selectedTypes.map(type => type.id).join(',');
-                    const response = await fetch(
-                        `/api/v1/expensesget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&typeIds=${typeIds}`+
-                        (formattedStartDate ? `&startDate=${formattedStartDate}` : "") +
-                        (formattedEndDate ? `&endDate=${formattedEndDate}` : "")
-                    );
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-
-                    const data: ExpensesResponse = await response.json();
-                    setExpenses(data.expenses);
-                    setPagination(data.pagination);
-                    setError(null);
-                } catch (err) {
-                    console.error("Error fetching expenses:", err);
-                    setError("Failed to load expenses. Please try again later.");
-                } finally {
-                    setIsLoading(false);
-                }
-            };
 
             fetchExpenses();
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [page, search, shouldRefresh, selectedEmployees, selectedTypes, dateRange]);
+    }, [page, shouldRefresh, selectedEmployees, selectedTypes, dateRange]);
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+
+            fetchExpenses();
+        }, 1500);
+
+        return () => clearTimeout(delayDebounce);
+    }, [search]);
 
     useEffect(() => {
         setPage(1);
     }, [search]);
+
+    const fetchExpenses = async () => {
+        try {
+            setIsLoading(true);
+
+            // 🔹 Convert to backend-compatible format: "19 Apr 2025"
+            /*const formatDate = (date: Date | null) => {
+                return date
+                    ? date.toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    }).replace(",", "")
+                    : "";
+            };*/
+
+            /*const formatDate = (date: Date | null) => {
+                return date
+                    ? date.toISOString().split("T")[0] // outputs "2025-04-01"
+                    : "";
+            };*/
+
+            const formatDate = (date: Date | null) => {
+                if (!date) return "";
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+
+                return `${year}-${month}-${day}`; // e.g., "2025-04-16"
+            };
+
+            const formattedStartDate = formatDate(startDate);
+            const formattedEndDate = formatDate(endDate);
+
+            /*const employeeIds = selectedEmployees.map(employee => employee.id).join(',');*/
+            const employeeIds = selectedEmployees
+                .map(employee => employee.id === null ? 'null' : employee.id)
+                .join(',');
+            const typeIds = selectedTypes.map(type => type.id).join(',');
+            const response = await fetch(
+                `/api/v1/expensesget?page=${page}&limit=${limit}&search=${search}&employeeIds=${employeeIds}&typeIds=${typeIds}`+
+                (formattedStartDate ? `&startDate=${formattedStartDate}` : "") +
+                (formattedEndDate ? `&endDate=${formattedEndDate}` : "")
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: ExpensesResponse = await response.json();
+            setExpenses(data.expenses);
+            setPagination(data.pagination);
+            setError(null);
+        } catch (err) {
+            console.error("Error fetching expenses:", err);
+            setError("Failed to load expenses. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Function to Add New Expense
     const handleAddExpense = async () => {
