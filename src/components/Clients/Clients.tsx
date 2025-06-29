@@ -1144,7 +1144,7 @@ const Clients = () => {
       {/* --- Filters --- */}
       <div className="mb-8 flex flex-wrap gap-4 items-end bg-white/90 rounded-xl shadow-lg p-4 border border-blue-200">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-name">Name</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-name">Name</label>
           <input
             id="filter-name"
             name="name"
@@ -1156,7 +1156,7 @@ const Clients = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-place">Place</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-place">Place</label>
           <select
             id="filter-place"
             name="place"
@@ -1171,7 +1171,7 @@ const Clients = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-zone">Zone</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-zone">Zone</label>
           <select
             id="filter-zone"
             name="zone"
@@ -1186,7 +1186,7 @@ const Clients = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-clientStatus">Client Status</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-clientStatus">Client Status</label>
           <select
             id="filter-clientStatus"
             name="clientStatus"
@@ -1201,7 +1201,7 @@ const Clients = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-principalTerm">Principal Term</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-principalTerm">Principal Term</label>
           <select
             id="filter-principalTerm"
             name="principalTerm"
@@ -1216,7 +1216,7 @@ const Clients = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-principalStatus">Principal Status</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-principalStatus">Principal Status</label>
           <select
             id="filter-principalStatus"
             name="principalStatus"
@@ -1231,7 +1231,7 @@ const Clients = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="filter-interestStatus">Interest Status</label>
+          <label className="block text-blue-900 font-semibold mb-1" htmlFor="filter-interestStatus">Interest Status</label>
           <select
             id="filter-interestStatus"
             name="interestStatus"
@@ -1413,7 +1413,11 @@ const Clients = () => {
                         <div className="p-4">
                           <h4 className="font-semibold mb-2 text-indigo-700">Principal Details</h4>
                           {/* Principal Table */}
-                          <div className="overflow-x-auto rounded-lg shadow border border-indigo-200 bg-white/90">
+                          {/*<div className="overflow-x-auto rounded-lg shadow border border-indigo-200 bg-white/90">*/}
+                          <div
+                            className="overflow-x-auto rounded-lg shadow border border-indigo-200"
+                            style={{ backgroundColor: "#C5CAE9" }}
+                          >
                             <table className="min-w-full border-collapse">
                               <thead>
                                 <tr className={`${headerColor}`}>
@@ -1553,7 +1557,12 @@ const Clients = () => {
                                         <td colSpan={10} className="bg-purple-50 border-b border-purple-200">
                                           <div className="p-3">
                                             <h5 className="font-semibold mb-2 text-purple-700">Interest Details</h5>
-                                            <div className="overflow-x-auto rounded-md shadow border border-purple-200 bg-white/90">
+                                            {/*<div className="overflow-x-auto rounded-md shadow border border-purple-200 bg-white/90">*/}
+                                            <div
+                                              className="overflow-x-auto rounded-md shadow border border-purple-200"
+                                              style={{ backgroundColor: "#FFCC80" }}
+                                            >
+
                                               <table className="min-w-full border-collapse">
                                                 <thead>
                                                   <tr className={`${headerColor}`}>

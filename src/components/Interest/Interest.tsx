@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
-const headerColor = "bg-gradient-to-r from-blue-200 to-indigo-200 text-blue-900";
+// const headerColor = "bg-gradient-to-r from-blue-200 to-indigo-200 text-blue-900";
+const headerColor = "bg-[#3F51B5] text-white";
 
 function getCurrentMonth() {
   const now = new Date();
@@ -568,7 +569,7 @@ const Clients = () => {
       </h2>
       <div
         className="overflow-x-auto rounded-xl shadow-lg border border-blue-200 mb-4"
-        style={{ background: "#FFFDE7" }}
+        style={{ background: "#C5CAE9" }}
       >
         {loadingCurrent ? (
           <div className="p-8 text-center text-blue-700">Loading...</div>
@@ -629,8 +630,12 @@ const Clients = () => {
                 ) : (
                   currentInterestPageData.map((row, idx) => {
                     const globalIdx = (currentPageCurrent - 1) * ROWS_PER_PAGE + idx;
+                    const isSelected = selectedRows.includes(globalIdx);
                     return (
-                      <tr key={globalIdx} className="hover:bg-yellow-50">
+                      <tr
+                        key={globalIdx}
+                        className={`hover:bg-yellow-50 ${isSelected ? "bg-yellow-50" : ""}`}
+                      >
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
                           {row.Name}
                         </td>
@@ -667,7 +672,7 @@ const Clients = () => {
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px] text-center">
                           <input
                             type="checkbox"
-                            checked={selectedRows.includes(globalIdx)}
+                            checked={isSelected}
                             onChange={() => handleSelectRow(globalIdx)}
                           />
                         </td>
@@ -712,7 +717,7 @@ const Clients = () => {
       </h2>
       <div
         className="overflow-x-auto rounded-xl shadow-lg border border-blue-200"
-        style={{ background: "#FFFDE7" }}
+        style={{ background: "#C5CAE9" }}
       >
         {loadingPrevious ? (
           <div className="p-8 text-center text-blue-700">Loading...</div>
@@ -785,8 +790,12 @@ const Clients = () => {
                 ) : (
                   previousPendingPageData.map((row, idx) => {
                     const globalIdx = (currentPagePrevious - 1) * ROWS_PER_PAGE + idx;
+                    const isSelected = selectedPendingRows.includes(globalIdx);
                     return (
-                      <tr key={globalIdx} className="hover:bg-yellow-50">
+                      <tr
+                        key={globalIdx}
+                        className={`hover:bg-yellow-50 ${isSelected ? "bg-yellow-50" : ""}`}
+                      >
                         {/* <td className="px-4 py-2 border border-[0.5px]">
                           {row.PrincipalID}
                         </td> */}
@@ -835,7 +844,7 @@ const Clients = () => {
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px] text-center">
                           <input
                             type="checkbox"
-                            checked={selectedPendingRows.includes(globalIdx)}
+                            checked={isSelected}
                             onChange={() => handleSelectPendingRow(globalIdx)}
                           />
                         </td>
