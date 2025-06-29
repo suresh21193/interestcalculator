@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { Tab } from "@headlessui/react";
-import Employees from "@/components/Employees/Employees";
-import Projects from "@/components/Projects/Projects";
 import { Toaster } from "react-hot-toast";
-import Expenses from "@/components/Expenses/Expenses";
-import OfficeExpenses from "@/components/OfficeExpenses/OfficeExpenses";
+import Clients from "@/components/Clients/Clients";
+import Interest from "@/components/Interest/Interest";
+import InterestTerm3 from "@/components/InterestTerm3/InterestTerm3";
 
-const tabs = ["Employees", "Projects", "Expenses", "OfficeExpenses"];
+const tabs = ["Clients","Monthly Interest","Quarterly Interest"];
 
 const HomePage = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -18,8 +17,8 @@ const HomePage = () => {
         <header className="header-bg-color py-4 shadow-md">
           <div className="container mx-auto flex justify-center items-center px-4">
             <div className="flex items-center space-x-2">
-              <img src="/images/logo/vistalogo.jpeg" alt="Brand Logo" className="header-icon" />
-              <h1 className="text-xl font-bold header-text-color">Vista Homes </h1>
+              <img src="/images/logo/interestlogo.png" alt="Brand Logo" className="header-icon" />
+              <h1 className="text-xl font-bold header-text-color">Interest Calculator </h1>
             </div>
           </div>
         </header>
@@ -42,16 +41,13 @@ const HomePage = () => {
             </Tab.List>
             <Tab.Panels>
               <Tab.Panel>
-                <Employees />
+                <Clients />
               </Tab.Panel>
               <Tab.Panel>
-                <Projects />
+                <Interest />
               </Tab.Panel>
               <Tab.Panel>
-                <Expenses />
-              </Tab.Panel>
-              <Tab.Panel>
-                <OfficeExpenses />
+                <InterestTerm3 />
               </Tab.Panel>
             </Tab.Panels>
           </Tab.Group>

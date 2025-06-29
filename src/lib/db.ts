@@ -8,87 +8,49 @@ const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 
 
-// Create employees table
+// Create Client table
 db.exec(`
-    CREATE TABLE IF NOT EXISTS employees
+    CREATE TABLE  IF NOT EXISTS Client 
     (
-        "empid" INTEGER,
-        "name"  TEXT NOT NULL,
-        "role"  TEXT NOT NULL,
-        "status" TEXT DEFAULT 'Active',
-        PRIMARY KEY ("empid")
+        ClientID INTEGER PRIMARY KEY,
+        Name TEXT,
+        MobileNumber TEXT,
+        Place TEXT,
+        Address TEXT,
+        Zone TEXT,
+        Status TEXT
     );
 `);
 
-// Create projects table
+// Create Principal table
 db.exec(`
-    CREATE TABLE IF NOT EXISTS projects  (
-        projectid INTEGER PRIMARY KEY,
-        projectname TEXT NOT NULL,
-        location TEXT NOT NULL,
-        projectcost NUMERIC(15,2),
-        description TEXT
-    );
-`);
-
-// Create officeexpenses table
-db.exec(`
-    CREATE TABLE IF NOT EXISTS officeexpenses
+    CREATE TABLE  IF NOT EXISTS Principal 
     (
-        "officeexpenseid" INTEGER,
-        "name"            TEXT           NOT NULL,
-        "cost"            NUMERIC(15, 2) NOT NULL,
-        "dateofexpense"   DATE           NOT NULL,
-        "remarks"         TEXT,
-        PRIMARY KEY ("officeexpenseid")
-    )
+        PrincipalID INTEGER PRIMARY KEY,
+        PrincipalAmount REAL,
+        StartDate DATE,
+        Term INTEGER,
+        InterestAmount REAL,
+        Remarks TEXT,
+        Status TEXT,
+        ClosedDate DATE,
+        ClientID INTEGER,
+        FOREIGN KEY (ClientID) REFERENCES Client(ClientID) ON DELETE CASCADE
+    );
 `);
 
-// Create pettycash table
+// Create Interest table
 db.exec(`
-    CREATE TABLE IF NOT EXISTS pettycash
+    CREATE TABLE  IF NOT EXISTS Interest 
     (
-        "pettycashid"     INTEGER,
-        "empid"           INTEGER,
-        "pettycash"       NUMERIC(15, 2) NOT NULL,
-        "dateofpettycash" DATE           NOT NULL,
-        PRIMARY KEY ("pettycashid"),
-        FOREIGN KEY ("empid") REFERENCES "employees" ("empid") ON DELETE CASCADE
+        InterestID INTEGER PRIMARY KEY,
+        InterestReceived REAL,
+        InterestMonth DATE,
+        InterestReceivedDate DATE,
+        Status TEXT,
+        PrincipalID INTEGER,
+        FOREIGN KEY (PrincipalID) REFERENCES Principal(PrincipalID) ON DELETE CASCADE
     );
 `);
-
-// Create projectexpenses table
-db.exec(`
-    CREATE TABLE IF NOT EXISTS projectexpenses  (
-      expenseid INTEGER PRIMARY KEY,
-      projectid INTEGER,
-      empid INTEGER,
-      expensename TEXT NOT NULL,
-      amount NUMERIC(15,2) NOT NULL,
-      type TEXT NOT NULL,
-      dateofexpense DATE NOT NULL,
-      remarks TEXT,
-      FOREIGN KEY (projectid) REFERENCES projects(projectid) ON DELETE CASCADE,
-      FOREIGN KEY (empid) REFERENCES employees(empid) ON DELETE CASCADE
-    );
-`);
-
-// Create amountreceived table
-db.exec(`
-    CREATE TABLE IF NOT EXISTS amountreceived
-    (
-        "amountreceivedid"     INTEGER,
-        "projectid"           INTEGER,
-        "amountreceived"       NUMERIC(15, 2) NOT NULL,
-        "dateofamountreceived" DATE NOT NULL,
-        "remarks"         TEXT,
-        PRIMARY KEY ("amountreceivedid"),
-        FOREIGN KEY ("projectid") REFERENCES "projects" ("projectid") ON DELETE CASCADE
-    );
-`);
-
-
-
-
 
 export default db;
