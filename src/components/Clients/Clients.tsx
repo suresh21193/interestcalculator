@@ -332,14 +332,15 @@ const Clients = () => {
   };
 
   // Delete handler
-  const handleDelete = (index: number) => {
-    setDeleteIdx(index);
+  const handleDelete = (globalIdx: number) => {
+    setDeleteIdx(globalIdx);
   };
 
   // Confirm delete
   const handleConfirmDelete = async () => {
     if (deleteIdx === null) return;
-    const client = clients[deleteIdx];
+    const client = filteredClients[deleteIdx];
+    const originalIdx = clients.findIndex(cl => cl.ClientID === client.ClientID);
     try {
       const response = await fetch("/api/v1/clients", {
         method: "DELETE",
@@ -347,7 +348,7 @@ const Clients = () => {
         body: JSON.stringify({ ClientID: client.ClientID }),
       });
       if (response.ok) {
-        setClients(clients.filter((_, i) => i !== deleteIdx));
+        setClients(clients.filter((_, i) => i !== originalIdx));
         setToast({ message: "Client deleted successfully!", type: "success" });
       } else {
         const err = await response.json();
@@ -365,8 +366,8 @@ const Clients = () => {
     setDeleteIdx(null);
   };
 
-  const handleRowClick = (idx: number) => {
-    setExpandedRow(expandedRow === idx ? null : idx);
+  const handleRowClick = (globalIdx: number) => {
+    setExpandedRow(expandedRow === globalIdx ? null : globalIdx);
   };
 
   const handlePrincipalRowClick = (clientIdx: number, principalIdx: number) => {
@@ -377,21 +378,23 @@ const Clients = () => {
   };
 
   // --- Client Edit logic ---
-  const handleEdit = (idx: number) => {
-    setEditIndex(idx);
-    setEditForm({
-      Name: clients[idx].Name,
-      MobileNumber: clients[idx].MobileNumber,
-      Place: clients[idx].Place,
-      Address: clients[idx].Address,
-      Zone: clients[idx].Zone,
-      Status: clients[idx].Status,
-    });
-  };
+  const handleEdit = (globalIdx: number) => {
+  const client = filteredClients[globalIdx];
+  setEditIndex(globalIdx);
+  setEditForm({
+    Name: client.Name,
+    MobileNumber: client.MobileNumber,
+    Place: client.Place,
+    Address: client.Address,
+    Zone: client.Zone,
+    Status: client.Status,
+  });
+};
 
   // Update client using PUT API
-  const handleUpdate = async (idx: number) => {
-    const client = clients[idx];
+  const handleUpdate = async (globalIdx: number) => {
+    const client = filteredClients[globalIdx];
+    const originalIdx = clients.findIndex(cl => cl.ClientID === client.ClientID);
     try {
       const response = await fetch("/api/v1/clients", {
         method: "PUT",
@@ -408,9 +411,8 @@ const Clients = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        // Update the client in the local state
         const updatedClients = [...clients];
-        updatedClients[idx] = { ...updatedClients[idx], ...data.client };
+        updatedClients[originalIdx] = { ...updatedClients[originalIdx], ...data.client };
         setClients(updatedClients);
         setEditIndex(null);
         setToast({ message: "Client updated successfully!", type: "success" });
@@ -421,7 +423,6 @@ const Clients = () => {
     } catch (error) {
       setToast({ message: "Failed to update client", type: "error" });
     }
-    // Hide toast after 3 seconds
     setTimeout(() => setToast({ message: "", type: "" }), 3000);
   };
 
@@ -491,7 +492,10 @@ const Clients = () => {
   // --- Add Principal Handlers ---
   const handleAddPrincipal = async () => {
     if (isAddPrincipalOpen.clientIdx === null) return;
-    const client = clients[isAddPrincipalOpen.clientIdx];
+    // Get the client from filteredClients using the global index
+    const client = filteredClients[isAddPrincipalOpen.clientIdx];
+    // Find the original index in the main clients array using ClientID
+    const originalIdx = clients.findIndex(cl => cl.ClientID === client.ClientID);
     try {
       const response = await fetch("/api/v1/principal", {
         method: "POST",
@@ -509,7 +513,8 @@ const Clients = () => {
       if (response.ok) {
         const data = await response.json();
         const updatedClients = [...clients];
-        updatedClients[isAddPrincipalOpen.clientIdx].principals.push({ ...data.principal, interests: [] });
+        // Use originalIdx here, not isAddPrincipalOpen.clientIdx
+        updatedClients[originalIdx].principals.push({ ...data.principal, interests: [] });
         setClients(updatedClients);
         setToast({ message: "Principal added successfully!", type: "success" });
         setIsAddPrincipalOpen({ clientIdx: null });
@@ -534,9 +539,13 @@ const Clients = () => {
   // --- Update Principal Handler (API) ---
   const handleUpdatePrincipal = async () => {
     if (editPrincipal.clientIdx === null || editPrincipal.principalIdx === null) return;
-    const clientIdx = editPrincipal.clientIdx;
+    // Get the client from filteredClients using the global index
+    const client = filteredClients[editPrincipal.clientIdx];
+    // Find the original index in the main clients array using ClientID
+    const originalIdx = clients.findIndex(cl => cl.ClientID === client.ClientID);
     const principalIdx = editPrincipal.principalIdx;
-    const principal = clients[clientIdx].principals[principalIdx];
+    const principal = clients[originalIdx].principals[principalIdx];
+
     try {
       const response = await fetch("/api/v1/principal", {
         method: "PUT",
@@ -555,7 +564,7 @@ const Clients = () => {
       if (response.ok) {
         const data = await response.json();
         const updatedClients = [...clients];
-        updatedClients[clientIdx].principals[principalIdx] = {
+        updatedClients[originalIdx].principals[principalIdx] = {
           ...data.principal,
           interests: principal.interests || [],
         };
@@ -646,9 +655,13 @@ const Clients = () => {
   //   });
   // };
 
-  //Updated code May21-
-  const handleEditInterest = (clientIdx: number, principalIdx: number, interestIdx: number) => {
-    const interest = clients[clientIdx].principals[principalIdx].interests[interestIdx];
+  const handleEditInterest = (globalIdx: number, principalIdx: number, interestIdx: number) => {
+    // Get the client from filteredClients using the global index
+    const client = filteredClients[globalIdx];
+    // Find the original index in the main clients array using ClientID
+    const originalIdx = clients.findIndex(cl => cl.ClientID === client.ClientID);
+    const interest = clients[originalIdx].principals[principalIdx].interests[interestIdx];
+
     // Format InterestMonth as "yyyy-mm" if it's a valid date string
     let formattedMonth = "";
     if (interest.InterestMonth) {
@@ -657,12 +670,13 @@ const Clients = () => {
         formattedMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       }
     }
-    setEditInterest({ clientIdx, principalIdx, interestIdx });
+
+    setEditInterest({ clientIdx: globalIdx, principalIdx, interestIdx });
     setEditInterestForm({
       InterestReceived: interest.InterestReceived,
       InterestReceivedDate: interest.InterestReceivedDate,
       Status: interest.Status || "Received",
-      InterestMonth: formattedMonth, // Set formatted InterestMonth for editing
+      InterestMonth: formattedMonth,
     });
   };
 
@@ -670,6 +684,7 @@ const Clients = () => {
   const handleUpdateInterest = async () => {
     if (
       editInterest.clientIdx === null ||
+      
       editInterest.principalIdx === null ||
       editInterest.interestIdx === null
     )
@@ -1347,7 +1362,7 @@ const Clients = () => {
                       <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
                         <button
                           className="bg-blue-600 text-white px-2 py-1 rounded mr-2"
-                          onClick={() => handleUpdate(idx)}
+                          onClick={() => handleUpdate(globalIdx)}
                         >
                           Update
                         </button>
@@ -1435,7 +1450,7 @@ const Clients = () => {
                               <tbody>
                                 {(client.principals || []).map((principal, pidx) => (
                                   <React.Fragment key={pidx}>
-                                    {editPrincipal.clientIdx === idx && editPrincipal.principalIdx === pidx ? (
+                                    {editPrincipal.clientIdx === globalIdx && editPrincipal.principalIdx === pidx ? (
                                       <tr className="bg-indigo-50 border-b border-indigo-200">
                                         <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td>
                                         <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
@@ -1524,7 +1539,7 @@ const Clients = () => {
                                         className="cursor-pointer hover:bg-indigo-100 transition border-b border-indigo-200"
                                         onClick={e => {
                                           e.stopPropagation();
-                                          handlePrincipalRowClick(idx, pidx);
+                                          handlePrincipalRowClick(globalIdx, pidx);
                                         }}
                                       >
                                         <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td>
@@ -1538,13 +1553,13 @@ const Clients = () => {
                                         <td className="px-2 py-1 border-indigo-300 border border-[0.5px]" onClick={e => e.stopPropagation()}>
                                           <button
                                             className="text-blue-600 hover:underline mr-2"
-                                            onClick={() => handleEditPrincipal(idx, pidx)}
+                                            onClick={() => handleEditPrincipal(globalIdx, pidx)}
                                           >
                                             Edit
                                           </button>
                                           <button
                                             className="text-red-600 hover:underline"
-                                            onClick={() => handleDeletePrincipal(idx, pidx)}
+                                            onClick={() => handleDeletePrincipal(globalIdx, pidx)}
                                           >
                                             Delete
                                           </button>
@@ -1552,7 +1567,7 @@ const Clients = () => {
                                       </tr>
                                     )}
                                     {/* Interest Table */}
-                                    {expandedPrincipal[idx] === pidx && (
+                                    {expandedPrincipal[globalIdx] === pidx && (
                                       <tr>
                                         <td colSpan={10} className="bg-purple-50 border-b border-purple-200">
                                           <div className="p-3">
@@ -1577,7 +1592,7 @@ const Clients = () => {
                                                 <tbody>
                                                   {(principal.interests || []).map((interest, iidx) => (
                                                     <React.Fragment key={iidx}>
-                                                      {editInterest.clientIdx === idx &&
+                                                      {editInterest.clientIdx === globalIdx &&
                                                       editInterest.principalIdx === pidx &&
                                                       editInterest.interestIdx === iidx ? (
                                                         <tr className="bg-purple-100 border-b border-purple-200">
@@ -1647,13 +1662,13 @@ const Clients = () => {
                                                           <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             <button
                                                               className="text-blue-600 hover:underline mr-2"
-                                                              onClick={() => handleEditInterest(idx, pidx, iidx)}
+                                                              onClick={() => handleEditInterest(globalIdx, pidx, iidx)}
                                                             >
                                                               Edit
                                                             </button>
                                                             <button
                                                               className="text-red-600 hover:underline"
-                                                              onClick={() => handleDeleteInterest(idx, pidx, iidx)}
+                                                              onClick={() => handleDeleteInterest(globalIdx, pidx, iidx)}
                                                             >
                                                               Delete
                                                             </button>
@@ -1687,14 +1702,14 @@ const Clients = () => {
                                               <button
                                                 className="bg-gradient-to-r from-purple-400 to-indigo-400 text-white px-4 py-2 rounded shadow hover:from-purple-500 hover:to-indigo-500 transition"
                                                 onClick={() =>
-                                                  setIsAddInterestOpen({ clientIdx: idx, principalIdx: pidx })
+                                                  setIsAddInterestOpen({ clientIdx: globalIdx, principalIdx: pidx })
                                                 }
                                               >
                                                 + Add Interest
                                               </button>
                                             </div>
                                             {/* Add Interest Modal */}
-                                            {isAddInterestOpen.clientIdx === idx &&
+                                            {isAddInterestOpen.clientIdx === globalIdx &&
                                               isAddInterestOpen.principalIdx === pidx && (
                                                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
                                                   <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
@@ -1834,13 +1849,13 @@ const Clients = () => {
                           <div className="mt-2">
                             <button
                               className="bg-gradient-to-r from-indigo-400 to-blue-400 text-white px-4 py-2 rounded shadow hover:from-indigo-500 hover:to-blue-500 transition"
-                              onClick={() => setIsAddPrincipalOpen({ clientIdx: idx })}
+                              onClick={() => setIsAddPrincipalOpen({ clientIdx: globalIdx })}
                             >
                               + Add Principal
                             </button>
                           </div>
                           {/* Add Principal Modal */}
-                          {isAddPrincipalOpen.clientIdx === idx && (
+                          {isAddPrincipalOpen.clientIdx === globalIdx && (
                             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
                               <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
                                 <h3 className="text-lg font-bold mb-4">Add Principal</h3>
