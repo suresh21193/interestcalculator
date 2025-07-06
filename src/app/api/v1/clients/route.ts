@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       !Name ||
       !MobileNumber ||
       !Place ||
-      !Address ||
+      //!Address ||
       !Zone ||
       !Status
     ) {
@@ -74,7 +74,7 @@ export async function PUT(req: NextRequest) {
       !Name ||
       !MobileNumber ||
       !Place ||
-      !Address ||
+      //!Address ||
       !Zone ||
       !Status
     ) {

@@ -279,6 +279,12 @@ const Clients = () => {
     0
   );
 
+  const totalCurrentInterestReceived = filteredCurrentInterestData =>
+    filteredCurrentInterestData.reduce(
+      (sum, row) => sum + (parseFloat(row.InterestReceived) || 0),
+      0
+    );
+
   const totalInterestReceived = filteredPreviousPendingData =>
     filteredPreviousPendingData.reduce(
       (sum, row) => sum + (parseFloat(row.InterestReceived) || 0),
@@ -355,6 +361,11 @@ const Clients = () => {
         return sum + (isNaN(value) ? 0 : value);
     }, 0);
 
+    const totalCurrentInterestReceived = currentInterestData.reduce((sum, row) => {
+        const value = parseFloat(String(row.InterestReceived).replace(/[^0-9.-]+/g, ""));
+        return sum + (isNaN(value) ? 0 : value);
+    }, 0);
+
     const totalInterestReceived = previousPendingData.reduce((sum, row) => {
         const value = parseFloat(String(row.InterestReceived).replace(/[^0-9.-]+/g, ""));
         return sum + (isNaN(value) ? 0 : value);
@@ -369,7 +380,7 @@ const Clients = () => {
     doc.text("Current Month Pending Interests", 14, 16);
     autoTable(doc, {
         head: [[
-            "Name", "PrincipalAmount", "InterestAmount", "Place", "Zone", "Term", "StartDate", "InterestDate", "PendingInterest", "Status"
+            "Name", "PrincipalAmount", "InterestAmount", "Place", "Zone", "Term", "StartDate", "InterestDate","InterestReceived", "PendingInterest", "Status"
         ]],
         body: currentInterestData.map(row => [
             row.Name,
@@ -380,6 +391,7 @@ const Clients = () => {
             row.Term,
             row.StartDate,
             row.InterestDate,
+            row.InterestReceived,
             row.CurrentMonthPendingInterest
               ? Number(String(row.CurrentMonthPendingInterest).replace(/[^0-9.-]+/g, "")).toLocaleString("en-IN", { maximumFractionDigits: 0 })
               : "",
@@ -391,6 +403,7 @@ const Clients = () => {
         foot: [
             [
                 { content: "Total", colSpan: 8, styles: { halign: "right" } },
+                { content: `Rs.${totalCurrentInterestReceived.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, styles: { halign: "left" } },
                 { content: `Rs.${totalCurrentMonthPendingInterest.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, styles: { halign: "left" } },
                 { content: "", styles: { halign: "left" } }
             ]
@@ -684,7 +697,10 @@ const Clients = () => {
               <tfoot>
                 <tr>
                   <td colSpan={8} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
-                    Total
+                    Total:
+                  </td>
+                  <td className="font-semibold px-4 py-2 border-t border-blue-200">
+                    {totalInterestReceived(filteredCurrentInterestData).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                   </td>
                   <td className="font-semibold px-4 py-2 border-t border-blue-200">
                     {totalCurrentMonthPendingInterest.toLocaleString("en-IN", { style: "currency", currency: "INR" })}
@@ -856,7 +872,7 @@ const Clients = () => {
               <tfoot>
                 <tr>
                   <td colSpan={9} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
-                    Total
+                    Total:
                   </td>
                   <td className="font-semibold px-4 py-2 border-t border-blue-200">
                     {totalInterestReceived(filteredPreviousPendingData).toLocaleString("en-IN", { style: "currency", currency: "INR" })}

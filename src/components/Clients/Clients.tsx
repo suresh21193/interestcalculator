@@ -182,7 +182,7 @@ const Clients = () => {
       form.Name.trim() !== "" &&
       form.MobileNumber.trim() !== "" &&
       form.Place.trim() !== "" &&
-      form.Address.trim() !== "" &&
+      //form.Address.trim() !== "" &&
       form.Zone.trim() !== "" &&
       form.Status !== "" // Status must be selected
     );
@@ -210,7 +210,7 @@ const Clients = () => {
     if (form.Name.trim() === "") errors.Name = "Name required";
     if (form.MobileNumber.trim() === "") errors.MobileNumber = "Mobile Number required";
     if (form.Place.trim() === "") errors.Place = "Place required";
-    if (form.Address.trim() === "") errors.Address = "Address required";
+    //if (form.Address.trim() === "") errors.Address = "Address required";
     if (form.Zone.trim() === "") errors.Zone = "Zone required";
     if (form.Status === "") errors.Status = "Status required";
 
@@ -299,7 +299,7 @@ const Clients = () => {
       form.Name.trim() !== "" &&
       form.MobileNumber.trim() !== "" &&
       form.Place.trim() !== "" &&
-      form.Address.trim() !== "" &&
+      //form.Address.trim() !== "" &&
       form.Zone.trim() !== "" &&
       form.Status !== "" // Status must be selected
     );
@@ -310,7 +310,7 @@ const Clients = () => {
     if (form.Name.trim() === "") errors.Name = "Name required";
     if (form.MobileNumber.trim() === "") errors.MobileNumber = "Mobile Number required";
     if (form.Place.trim() === "") errors.Place = "Place required";
-    if (form.Address.trim() === "") errors.Address = "Address required";
+    //if (form.Address.trim() === "") errors.Address = "Address required";
     if (form.Zone.trim() === "") errors.Zone = "Zone required";
     if (form.Status === "") errors.Status = "Status required";
 
@@ -1379,13 +1379,13 @@ const Clients = () => {
                       className="cursor-pointer hover:bg-blue-100 transition border-b border-blue-100"
                       onClick={() => handleRowClick(globalIdx)}
                     >
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.ClientID}</td>
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Name}</td>
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.MobileNumber}</td>
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Place}</td>
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Address}</td>
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Zone}</td>
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Status}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.ClientID}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Name}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.MobileNumber}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Place}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Address}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Zone}</td>
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">{client.Status}</td>
                       {/* <td className="px-4 py-2 border-indigo-300 border border-[0.5px]" onClick={e => e.stopPropagation()}>
                         <button
                           className="text-blue-600 hover:underline mr-2"
@@ -1436,7 +1436,7 @@ const Clients = () => {
                             <table className="min-w-full border-collapse">
                               <thead>
                                 <tr className={`${headerColor}`}>
-                                  <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px] rounded-tl-md">PrincipalID</th>
+                                  {/* <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px] rounded-tl-md">PrincipalID</th> */}
                                   <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">PrincipalAmount (Rs.)</th>
                                   <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">StartDate</th>
                                   <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">Term</th>
@@ -1452,7 +1452,7 @@ const Clients = () => {
                                   <React.Fragment key={pidx}>
                                     {editPrincipal.clientIdx === globalIdx && editPrincipal.principalIdx === pidx ? (
                                       <tr className="bg-indigo-50 border-b border-indigo-200">
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td>
+                                        {/* <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td> */}
                                         <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
                                           <input
                                             type="number"
@@ -1542,15 +1542,15 @@ const Clients = () => {
                                           handlePrincipalRowClick(globalIdx, pidx);
                                         }}
                                       >
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalAmount}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.StartDate}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Term}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.InterestAmount}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Remarks}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Status}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.ClosedDate}</td>
-                                        <td className="px-2 py-1 border-indigo-300 border border-[0.5px]" onClick={e => e.stopPropagation()}>
+                                        {/* <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td> */}
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalAmount}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.StartDate}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Term}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.InterestAmount}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Remarks}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Status}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.ClosedDate}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]" onClick={e => e.stopPropagation()}>
                                           <button
                                             className="text-blue-600 hover:underline mr-2"
                                             onClick={() => handleEditPrincipal(globalIdx, pidx)}
@@ -1581,7 +1581,7 @@ const Clients = () => {
                                               <table className="min-w-full border-collapse">
                                                 <thead>
                                                   <tr className={`${headerColor}`}>
-                                                    <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px] rounded-tl-md">InterestID</th>
+                                                    {/* <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px] rounded-tl-md">InterestID</th> */}
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">InterestReceived (Rs.)</th>
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">InterestReceivedDate</th>
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">InterestMonth</th>
@@ -1596,7 +1596,7 @@ const Clients = () => {
                                                       editInterest.principalIdx === pidx &&
                                                       editInterest.interestIdx === iidx ? (
                                                         <tr className="bg-purple-100 border-b border-purple-200">
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestID}</td>
+                                                          {/* <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestID}</td> */}
                                                           <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             <input
                                                               type="number"
@@ -1652,13 +1652,13 @@ const Clients = () => {
                                                         </tr>
                                                       ) : (
                                                         <tr className="hover:bg-purple-100 transition border-b border-purple-200">
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestID}</td>
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestReceived}</td>
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestReceivedDate}</td>
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
+                                                          {/* <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestID}</td> */}
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestReceived}</td>
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestReceivedDate}</td>
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             {(interest.InterestMonth || "").slice(0, 7)}
                                                           </td>
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.Status}</td>
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.Status}</td>
                                                           <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             <button
                                                               className="text-blue-600 hover:underline mr-2"
@@ -1687,12 +1687,12 @@ const Clients = () => {
                                                 </tbody>
                                                 <tfoot>
                                                   <tr>
-                                                    <td colSpan={1} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
-                                                      Total Interest Received:
+                                                    <td className="text-left font-semibold px-4 py-2 border-t border-blue-200">
+                                                      Total Interest Received: {getPrincipalInterestReceivedTotal(principal).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                                                     </td>
-                                                    <td className="font-semibold px-4 py-2 border-t border-blue-200">
+                                                    {/* <td className="font-semibold px-4 py-2 border-t border-blue-200">
                                                       {getPrincipalInterestReceivedTotal(principal).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
-                                                    </td>
+                                                    </td> */}
                                                   </tr>
                                                 </tfoot>
                                               </table>
@@ -1814,7 +1814,7 @@ const Clients = () => {
                                 ))}
                                 {(!client.principals || client.principals.length === 0) && (
                                   <tr>
-                                    <td colSpan={10} className="text-center text-gray-400 py-2 border border-[0.5px]">
+                                    <td colSpan={9} className="text-center text-gray-400 py-2 border border-[0.5px]">
                                       No principal data available.
                                     </td>
                                   </tr>
@@ -1822,12 +1822,12 @@ const Clients = () => {
                               </tbody>
                               <tfoot>
                                 <tr>
-                                  <td colSpan={1} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
-                                    Total Principal Amount:
+                                  <td className="text-left font-semibold px-4 py-2 border-t border-blue-200">
+                                    Total Principal Amount: {getClientPrincipalTotal(client).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                                   </td>
-                                  <td className="font-semibold px-4 py-2 border-t border-blue-200">
+                                  {/* <td className="font-semibold px-4 py-2 border-t border-blue-200">
                                     {getClientPrincipalTotal(client).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
-                                  </td>
+                                  </td> */}
                                   <td colSpan={2} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
                                     Total Interest Amount to be received as of {getCurrentMonth()}:
                                   </td>
@@ -1857,7 +1857,7 @@ const Clients = () => {
                           {/* Add Principal Modal */}
                           {isAddPrincipalOpen.clientIdx === globalIdx && (
                             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-                              <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
+                              <div className="bg-white p-6 rounded shadow-md w-full max-w-md" style={{ maxHeight: "90vh", overflowY: "auto" }}>
                                 <h3 className="text-lg font-bold mb-4">Add Principal</h3>
                                 <div className="space-y-3">
                                   <div>
@@ -1928,9 +1928,9 @@ const Clients = () => {
                                       value={addPrincipalForm.Remarks}
                                       onChange={handleAddPrincipalInputChange}
                                     />
-                                    {!addPrincipalForm.Remarks && (
+                                    {/* {!addPrincipalForm.Remarks && (
                                       <div className="text-red-600 text-sm mt-1">Remarks required</div>
-                                    )}
+                                    )} */}
                                   </div>
                                   <div>
                                     <label className="block font-medium mb-1" htmlFor="Status">Status</label>
@@ -1941,9 +1941,9 @@ const Clients = () => {
                                       value={addPrincipalForm.Status}
                                       onChange={handleAddPrincipalInputChange}
                                     >
-                                      <option value="">Select Status</option>
+                                      {/* <option value="">Select Status</option> */}
                                       <option value="Open">Open</option>
-                                      <option value="Closed">Closed</option>
+                                      {/* <option value="Closed">Closed</option> */}
                                     </select>
                                     {!addPrincipalForm.Status && (
                                       <div className="text-red-600 text-sm mt-1">Status required</div>
@@ -1963,7 +1963,7 @@ const Clients = () => {
                                       addPrincipalForm.StartDate &&
                                       addPrincipalForm.Term &&
                                       addPrincipalForm.InterestAmount &&
-                                      addPrincipalForm.Remarks &&
+                                      //addPrincipalForm.Remarks &&
                                       addPrincipalForm.Status
                                         ? "bg-green-600 text-white hover:bg-green-700"
                                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -1974,7 +1974,7 @@ const Clients = () => {
                                       !addPrincipalForm.StartDate ||
                                       !addPrincipalForm.Term ||
                                       !addPrincipalForm.InterestAmount ||
-                                      !addPrincipalForm.Remarks ||
+                                      //!addPrincipalForm.Remarks ||
                                       !addPrincipalForm.Status
                                     }
                                   >
@@ -2079,9 +2079,9 @@ const Clients = () => {
                   value={form.Address}
                   onChange={handleInputChange}
                 />
-                {formErrors.Address && (
+                {/* {formErrors.Address && (
                   <div className="text-red-600 text-sm mt-1">{formErrors.Address}</div>
-                )}
+                )} */}
               </div>
               <div>
                 <label className="block font-medium mb-1" htmlFor="Zone">Zone</label>
