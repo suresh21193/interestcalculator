@@ -109,7 +109,7 @@ export function getPendingInterestReport(inputMonth: string = '2025-04') {
     LEFT JOIN Interest i 
         ON i.PrincipalID = ime.PrincipalID
         AND strftime('%Y-%m', i.InterestMonth) = ime.InterestMonth
-    WHERE i.Status IS NULL OR i.Status = 'Pending'
+    WHERE i.Status IS NULL OR i.Status = 'Pending' 
     )
     SELECT
     PrincipalID,
@@ -128,6 +128,7 @@ export function getPendingInterestReport(inputMonth: string = '2025-04') {
     PendingAmount,
     PendingStatus
     FROM DetailedPending
+    where InterestMonth > strftime('%Y-%m', StartDate)
     ORDER BY PrincipalID, InterestMonth;
   `;
 

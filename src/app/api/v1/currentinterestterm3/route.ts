@@ -95,6 +95,7 @@ export function getPendingInterestReport(inputMonth: string = '2025-04') {
     JOIN CurrentMonthPending cmp ON cmp.PrincipalID = eid.PrincipalID
     WHERE cmp.CurrentMonthPendingInterest > 0
     AND strftime('%Y-%m', eid.InterestDate) = eid.InputMonthStr
+    AND eid.InputMonthStr > strftime('%Y-%m', eid.StartDate) 
     ORDER BY eid.PrincipalID;
         `;
 
