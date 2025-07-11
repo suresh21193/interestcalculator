@@ -1419,7 +1419,7 @@ const Clients = () => {
                           Delete
                         </button>
                       </td> */}
-                      <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
+                      <td className="text-center px-4 py-2 border-indigo-300 border border-[0.5px]">
                         <button
                           className="text-blue-600 hover:underline mr-2"
                           onClick={e => {
@@ -1688,7 +1688,7 @@ const Clients = () => {
                                                           </td>
                                                           <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.Status}</td>
                                                           <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestRemarks}</td>
-                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             <button
                                                               className="text-blue-600 hover:underline mr-2"
                                                               onClick={() => handleEditInterest(globalIdx, pidx, iidx)}

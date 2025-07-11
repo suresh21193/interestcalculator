@@ -51,9 +51,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ finishLoading }) => {
                     <Image
                         src="/images/logo/interestlogo.png"
                         alt="Logo"
-                        width={50}
-                        height={50}
+                        width={200}
+                        height={200}
                         priority
+                        className="w-[50px] h-[50px]"
                     />
                 </div>
             </div>
