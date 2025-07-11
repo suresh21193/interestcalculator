@@ -5,7 +5,7 @@ import db from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    let { InterestReceived, InterestReceivedDate, InterestMonth, Status, ...rest } = body;
+    let { InterestReceived, InterestReceivedDate, InterestMonth, Status, InterestRemarks, ...rest } = body;
 
     if (
       InterestReceived === undefined ||
@@ -20,14 +20,15 @@ export async function POST(req: NextRequest) {
     }
 
     const stmt = db.prepare(
-      `INSERT INTO Interest (InterestReceived, InterestReceivedDate, InterestMonth, Status, PrincipalID)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO Interest (InterestReceived, InterestReceivedDate, InterestMonth, Status, InterestRemarks, PrincipalID)
+       VALUES (?, ?, ?, ?, ?, ?)`
     );
     const info = stmt.run(
       InterestReceived,
       InterestReceivedDate,
       InterestMonth,
       Status,
+      InterestRemarks,
       body.PrincipalID
     );
 
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    let { InterestID, InterestReceived, InterestReceivedDate, InterestMonth, Status, ...rest } = body;
+    let { InterestID, InterestReceived, InterestReceivedDate, InterestMonth, Status, InterestRemarks, ...rest } = body;
 
     if (
       !InterestID ||
@@ -61,7 +62,7 @@ export async function PUT(req: NextRequest) {
 
     const stmt = db.prepare(
       `UPDATE Interest
-       SET InterestReceived = ?, InterestReceivedDate = ?, InterestMonth = ?, Status = ?
+       SET InterestReceived = ?, InterestReceivedDate = ?, InterestMonth = ?, Status = ?, InterestRemarks = ?
        WHERE InterestID = ?`
     );
     const info = stmt.run(
@@ -69,6 +70,7 @@ export async function PUT(req: NextRequest) {
       InterestReceivedDate,
       InterestMonth,
       Status,
+      InterestRemarks,
       InterestID
     );
 

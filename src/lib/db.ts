@@ -48,6 +48,7 @@ db.exec(`
         InterestMonth DATE,
         InterestReceivedDate DATE,
         Status TEXT,
+        InterestRemarks TEXT,
         PrincipalID INTEGER,
         FOREIGN KEY (PrincipalID) REFERENCES Principal(PrincipalID) ON DELETE CASCADE
     );

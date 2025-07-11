@@ -5,7 +5,7 @@ import db from '@/lib/db';
 export async function GET(req: NextRequest) {
   try {
     // Fetch all clients
-    const clients = db.prepare(`SELECT * FROM Client`).all();
+    const clients = db.prepare(`SELECT * FROM Client order by ClientID desc`).all();
 
     // Fetch all principals
     const principals = db.prepare(`SELECT * FROM Principal`).all();

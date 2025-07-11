@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 
 // const headerColor = "bg-gradient-to-r from-blue-200 to-indigo-200 text-blue-900";
 const headerColor = "bg-[#3F51B5] text-white";
+const pendingheaderColor = "bg-[#E65100] text-white";
 
 function getCurrentMonth() {
   const now = new Date();
@@ -389,8 +390,8 @@ const Clients = () => {
             row.Place,
             row.Zone,
             row.Term,
-            row.StartDate,
-            row.InterestDate,
+            formatDateDMY(row.StartDate),
+            formatDateDMY(row.InterestDate),
             row.InterestReceived,
             row.CurrentMonthPendingInterest
               ? Number(String(row.CurrentMonthPendingInterest).replace(/[^0-9.-]+/g, "")).toLocaleString("en-IN", { maximumFractionDigits: 0 })
@@ -424,8 +425,8 @@ const Clients = () => {
             row.Place,
             row.Zone,
             row.Term,
-            row.StartDate,
-            row.InterestDate,
+            formatDateDMY(row.StartDate),
+            formatDateDMY(row.InterestDate),
             row.InterestMonth,
             row.InterestAmount,
             row.InterestReceived,
@@ -453,6 +454,8 @@ const Clients = () => {
     setFilterPlace("");
     setFilterZone("");
     setFilterStatus("");
+    setCurrentPageCurrent(1);
+    setCurrentPagePrevious(1);
   };
 
   // Helper to get month name and year from yyyy-mm
@@ -461,6 +464,17 @@ const Clients = () => {
     const [year, month] = ym.split("-");
     const date = new Date(Number(year), Number(month) - 1);
     return `${date.toLocaleString("default", { month: "long" })} ${year}`;
+  }
+
+  // Format date string (YYYY-MM-DD or ISO) to DD-MM-YYYY
+  function formatDateDMY(dateStr: string) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr; // fallback if invalid
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
   }
 
   return (
@@ -490,7 +504,11 @@ const Clients = () => {
             className="border p-2 rounded w-40"
             placeholder="Search Name"
             value={filterName}
-            onChange={e => setFilterName(e.target.value)}
+            onChange={e => {
+              setFilterName(e.target.value);
+              setCurrentPageCurrent(1);
+              setCurrentPagePrevious(1);
+            }}
           />
         </div>
         <div>
@@ -498,7 +516,12 @@ const Clients = () => {
           <select
             className="border p-2 rounded w-40"
             value={filterPlace}
-            onChange={e => setFilterPlace(e.target.value)}
+            //onChange={e => setFilterPlace(e.target.value)}
+            onChange={e => {
+              setFilterPlace(e.target.value);
+              setCurrentPageCurrent(1);
+              setCurrentPagePrevious(1);
+            }}
           >
             <option value="">All</option>
             {placeOptions.map((place) => (
@@ -511,7 +534,12 @@ const Clients = () => {
           <select
             className="border p-2 rounded w-40"
             value={filterZone}
-            onChange={e => setFilterZone(e.target.value)}
+            //onChange={e => setFilterZone(e.target.value)}
+            onChange={e => {
+              setFilterZone(e.target.value);
+              setCurrentPageCurrent(1);
+              setCurrentPagePrevious(1);
+            }}
           >
             <option value="">All</option>
             {zoneOptions.map((zone) => (
@@ -524,7 +552,12 @@ const Clients = () => {
           <select
             className="border p-2 rounded w-40"
             value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
+            //onChange={e => setFilterStatus(e.target.value)}
+            onChange={e => {
+              setFilterStatus(e.target.value);
+              setCurrentPageCurrent(1);
+              setCurrentPagePrevious(1);
+            }}
           >
             <option value="">All</option>
             {statusOptions.map((status) => (
@@ -546,6 +579,8 @@ const Clients = () => {
               setMonth(e.target.value);
               fetchCurrentInterest(e.target.value);
               fetchPreviousPending(e.target.value);
+              setCurrentPageCurrent(1);
+              setCurrentPagePrevious(1);
             }}
             max="9999-12"
           />
@@ -665,10 +700,10 @@ const Clients = () => {
                           {row.Term}
                         </td>
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
-                          {row.StartDate}
+                          {formatDateDMY(row.StartDate)}
                         </td>
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
-                          {row.InterestDate}
+                          {formatDateDMY(row.InterestDate)}
                         </td>
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
                           {row.InterestAmount}
@@ -728,12 +763,13 @@ const Clients = () => {
       </div>
       
 
-      <h2 className="text-2xl font-bold mb-6 text-blue-800 tracking-wide">
+      {/* <h2 className="text-2xl font-bold mb-6 text-blue-800 tracking-wide"> */}
+      <h2 className="text-2xl font-bold mb-6 tracking-wide" style={{ color: "#E65100" }}>
         Previous Months Pendings
       </h2>
       <div
         className="overflow-x-auto rounded-xl shadow-lg border border-blue-200"
-        style={{ background: "#C5CAE9" }}
+        style={{ background: "#FFF3E0" }}
       >
         {loadingPrevious ? (
           <div className="p-8 text-center text-blue-700">Loading...</div>
@@ -741,7 +777,7 @@ const Clients = () => {
           <>
             <table className="min-w-full border-collapse">
               <thead>
-                <tr className={headerColor}>
+                <tr className={pendingheaderColor}>
                   {/* <th className="px-4 py-2 border-b border-blue-200 border border-[0.5px]">
                     PrincipalID
                   </th> */}
@@ -810,7 +846,7 @@ const Clients = () => {
                     return (
                       <tr
                         key={globalIdx}
-                        className={`hover:bg-yellow-50 ${isSelected ? "bg-yellow-50" : ""}`}
+                        className={`hover:bg-blue-50 ${isSelected ? "bg-blue-50" : ""}`}
                       >
                         {/* <td className="px-4 py-2 border border-[0.5px]">
                           {row.PrincipalID}
@@ -831,10 +867,10 @@ const Clients = () => {
                           {row.Term}
                         </td>
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
-                          {row.StartDate}
+                          {formatDateDMY(row.StartDate)}
                         </td>
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
-                          {row.InterestDate}
+                          {formatDateDMY(row.InterestDate)}
                         </td>
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
                           {row.InterestMonth}

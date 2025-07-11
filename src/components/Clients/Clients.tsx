@@ -48,6 +48,7 @@ const Clients = () => {
     InterestReceivedDate: "",
     Status: "Received",
     InterestMonth: "", // Add InterestMonth to the form state
+    InterestRemarks:"",
   });
 
   // Add Principal Modal State
@@ -71,6 +72,7 @@ const Clients = () => {
     InterestReceivedDate: "",
     Status: "Received",
     InterestMonth: "", // Add InterestMonth to the form state
+    InterestRemarks: "",
   });
 
   // Validation state for Add Client form
@@ -614,6 +616,7 @@ const Clients = () => {
           Status: addInterestForm.Status, // include Status
           PrincipalID: principal.PrincipalID,
           InterestMonth: addInterestForm.InterestMonth, // include InterestMonth
+          InterestRemarks: addInterestForm.InterestRemarks,
         }),
       });
       if (response.ok) {
@@ -628,6 +631,7 @@ const Clients = () => {
           InterestReceivedDate: "",
           Status: "Received",
           InterestMonth: "", // Reset InterestMonth
+          InterestRemarks: "",
         });
       } else {
         const err = await response.json();
@@ -677,6 +681,7 @@ const Clients = () => {
       InterestReceivedDate: interest.InterestReceivedDate,
       Status: interest.Status || "Received",
       InterestMonth: formattedMonth,
+      InterestRemarks: interest.InterestRemarks,
     });
   };
 
@@ -703,6 +708,7 @@ const Clients = () => {
           InterestReceivedDate: editInterestForm.InterestReceivedDate,
           Status: editInterestForm.Status, // include Status
           InterestMonth: editInterestForm.InterestMonth, // include InterestMonth
+          InterestRemarks: editInterestForm.InterestRemarks, 
         }),
       });
       if (response.ok) {
@@ -895,6 +901,17 @@ const Clients = () => {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   }
 
+  // Format date string (YYYY-MM-DD or ISO) to DD-MM-YYYY
+  function formatDateDMY(dateStr: string) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr; // fallback if invalid
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
   // Download PDF handler
   const handleDownloadPDF = useCallback(async () => {
     const jsPDF = (await import("jspdf")).default;
@@ -941,13 +958,13 @@ const Clients = () => {
           "StartDate","PrincipalAmount", "Term", "InterestAmount", "Remarks", "Status", "ClosedDate"
         ]],
         body: (client.principals || []).map(principal => [
-          principal.StartDate,
+          formatDateDMY(principal.StartDate),
           principal.PrincipalAmount,
           principal.Term,
           principal.InterestAmount,
           principal.Remarks,
           principal.Status,
-          principal.ClosedDate,
+          formatDateDMY(principal.ClosedDate),
         ]),
         startY: nextY + 4,
         styles: { fontSize: 8 },
@@ -1013,7 +1030,7 @@ const Clients = () => {
       // --- Interest Table for each principal ---
       (client.principals || []).forEach((principal) => {
         doc.text(
-          `Interest for Principal ${principal.PrincipalAmount}- StartDate ${principal.StartDate} (${client.Name})`,
+          `Interest for Principal ${principal.PrincipalAmount}- StartDate ${formatDateDMY(principal.StartDate)} (${client.Name})`,
           14,
           nextY
         );
@@ -1022,11 +1039,12 @@ const Clients = () => {
             "InterestReceived",
             "InterestReceivedDate",
             "InterestMonth",
-            "Status"
+            "Status",
+            "InterestRemarks"
           ]],
           body: (principal.interests || []).map(interest => [
             interest.InterestReceived,
-            interest.InterestReceivedDate,
+            formatDateDMY(interest.InterestReceivedDate),
             interest.InterestMonth
               ? (() => {
                   const d = new Date(interest.InterestMonth);
@@ -1035,7 +1053,8 @@ const Clients = () => {
                     : interest.InterestMonth;
                 })()
               : "",
-            interest.Status
+            interest.Status,
+            interest.InterestRemarks
           ]),
           startY: nextY + 4,
           styles: { fontSize: 8 },
@@ -1544,12 +1563,12 @@ const Clients = () => {
                                       >
                                         {/* <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalID}</td> */}
                                         <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.PrincipalAmount}</td>
-                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.StartDate}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{formatDateDMY(principal.StartDate)}</td>
                                         <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Term}</td>
                                         <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.InterestAmount}</td>
                                         <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Remarks}</td>
                                         <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.Status}</td>
-                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{principal.ClosedDate}</td>
+                                        <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{formatDateDMY(principal.ClosedDate)}</td>
                                         <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]" onClick={e => e.stopPropagation()}>
                                           <button
                                             className="text-blue-600 hover:underline mr-2"
@@ -1586,6 +1605,7 @@ const Clients = () => {
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">InterestReceivedDate</th>
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">InterestMonth</th>
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">Status</th>
+                                                    <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px]">Remarks</th>
                                                     <th className="px-2 py-1 border-b border-indigo-300 border border-[0.5px] rounded-tr-md">Actions</th>
                                                   </tr>
                                                 </thead>
@@ -1636,6 +1656,14 @@ const Clients = () => {
                                                             </select>
                                                           </td>
                                                           <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
+                                                            <input
+                                                              className="w-full border p-1 rounded"
+                                                              name="InterestRemarks"
+                                                              value={editInterestForm.InterestRemarks}
+                                                              onChange={handleEditInterestInputChange}
+                                                            />
+                                                          </td>
+                                                          <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             <button
                                                               className="bg-blue-600 text-white px-2 py-1 rounded mr-2"
                                                               onClick={handleUpdateInterest}
@@ -1654,11 +1682,12 @@ const Clients = () => {
                                                         <tr className="hover:bg-purple-100 transition border-b border-purple-200">
                                                           {/* <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestID}</td> */}
                                                           <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestReceived}</td>
-                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestReceivedDate}</td>
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{formatDateDMY(interest.InterestReceivedDate)}</td>
                                                           <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             {(interest.InterestMonth || "").slice(0, 7)}
                                                           </td>
                                                           <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.Status}</td>
+                                                          <td className="text-center px-2 py-1 border-indigo-300 border border-[0.5px]">{interest.InterestRemarks}</td>
                                                           <td className="px-2 py-1 border-indigo-300 border border-[0.5px]">
                                                             <button
                                                               className="text-blue-600 hover:underline mr-2"
@@ -1774,6 +1803,16 @@ const Clients = () => {
                                                         {!addInterestForm.Status && (
                                                           <div className="text-red-600 text-sm mt-1">Status required</div>
                                                         )}
+                                                      </div>
+                                                      <div>
+                                                        <label className="block font-medium mb-1" htmlFor="InterestRemarks">Remarks</label>
+                                                        <input
+                                                          id="InterestRemarks"
+                                                          className="w-full border p-2 rounded"
+                                                          name="InterestRemarks"
+                                                          value={addInterestForm.InterestRemarks}
+                                                          onChange={handleAddInterestInputChange}
+                                                        />
                                                       </div>
                                                     </div>
                                                     <div className="flex justify-end gap-2 mt-4">
