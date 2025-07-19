@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const principals = db.prepare(`SELECT * FROM Principal`).all();
 
     // Fetch all interests
-    const interests = db.prepare(`SELECT * FROM Interest`).all();
+    const interests = db.prepare(`SELECT * FROM Interest order by InterestMonth asc`).all();
 
     // Attach interests to principals
     const principalMap = principals.map((principal: any) => ({

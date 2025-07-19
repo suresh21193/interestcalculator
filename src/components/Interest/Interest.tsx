@@ -417,7 +417,7 @@ const Clients = () => {
     doc.text("Previous Months Pending Interests", 14, nextY);
     autoTable(doc, {
         head: [[
-            "Name", "PrincipalAmount", "Place", "Zone", "Term", "StartDate", "InterestDate", "InterestMonth", "InterestAmount", "InterestReceived", "PendingAmount", "PendingStatus"
+            "Name", "PrincipalAmount", "Place", "Zone", "Term", "StartDate", "InterestMonth", "InterestAmount", "InterestReceived", "PendingAmount", "PendingStatus"
         ]],
         body: previousPendingData.map(row => [
             row.Name,
@@ -426,8 +426,8 @@ const Clients = () => {
             row.Zone,
             row.Term,
             formatDateDMY(row.StartDate),
-            formatDateDMY(row.InterestDate),
-            row.InterestMonth,
+            //formatDateDMY(row.InterestDate),
+            formatInterestMonth(row.InterestMonth),
             row.InterestAmount,
             row.InterestReceived,
             row.PendingAmount,
@@ -438,7 +438,7 @@ const Clients = () => {
         theme: "grid",
         foot: [
             [
-                { content: "Total", colSpan: 9, styles: { halign: "right" } },
+                { content: "Total", colSpan: 8, styles: { halign: "right" } },
                 { content: `Rs.${totalInterestReceived.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, styles: { halign: "left" } },
                 { content: `Rs.${totalPendingAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, styles: { halign: "left" } },
                 { content: "", styles: { halign: "left" } }
@@ -475,6 +475,13 @@ const Clients = () => {
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
     return `${day}-${month}-${year}`;
+  }
+
+  function formatInterestMonth(ym: string) {
+    if (!ym) return "";
+    const [year, month] = ym.split("-");
+    const date = new Date(Number(year), Number(month) - 1);
+    return `${date.toLocaleString("default", { month: "short" })}-${year}`;
   }
 
   return (
@@ -799,9 +806,9 @@ const Clients = () => {
                   <th className="px-4 py-2 border-b border-indigo-300 border border-[0.5px]">
                     StartDate
                   </th>
-                  <th className="px-4 py-2 border-b border-indigo-300 border border-[0.5px]">
+                  {/*<th className="px-4 py-2 border-b border-indigo-300 border border-[0.5px]">
                     InterestDate
-                  </th>
+                  </th>*/}
                   <th className="px-4 py-2 border-b border-indigo-300 border border-[0.5px]">
                     InterestMonth
                   </th>
@@ -869,11 +876,11 @@ const Clients = () => {
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
                           {formatDateDMY(row.StartDate)}
                         </td>
-                        <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
+                        {/* <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
                           {formatDateDMY(row.InterestDate)}
-                        </td>
+                        </td> */}
                         <td className="px-4 py-2 border-indigo-300 border border-[0.5px]">
-                          {row.InterestMonth}
+                          {formatInterestMonth(row.InterestMonth)}
                         </td>
                         {/* <td className="px-4 py-2 border border-[0.5px]">
                           {row.InterestID}
@@ -907,7 +914,7 @@ const Clients = () => {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={9} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
+                  <td colSpan={8} className="text-right font-semibold px-4 py-2 border-t border-blue-200">
                     Total:
                   </td>
                   <td className="font-semibold px-4 py-2 border-t border-blue-200">
